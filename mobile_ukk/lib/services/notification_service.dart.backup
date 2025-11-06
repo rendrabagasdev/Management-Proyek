@@ -1,0 +1,242 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter/foundation.dart';
+import '../services/api_service.dart';
+
+class NotificationService {
+  static final NotificationService _instance = NotificationService._internal();
+  factory NotificationService() => _instance;
+  NotificationService._internal();
+
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
+
+  String? _fcmToken;
+  String? get fcmToken => _fcmToken;
+
+  /// Initialize Firebase Cloud Messaging
+  Future<void> initialize(ApiService apiService) async {
+    try {
+      // Request permission for iOS
+      NotificationSettings settings = await _firebaseMessaging
+          .requestPermission(
+            alert: true,
+            announcement: false,
+            badge: true,
+            carPlay: false,
+            criticalAlert: false,
+            provisional: false,
+            sound: true,
+          );
+
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        if (kDebugMode) {
+          print('✅ User granted notification permission');
+        }
+      } else if (settings.authorizationStatus ==
+          AuthorizationStatus.provisional) {
+        if (kDebugMode) {
+          print('⚠️ User granted provisional permission');
+        }
+      } else {
+        if (kDebugMode) {
+          print('❌ User declined notification permission');
+        }
+        return;
+      }
+
+      // Initialize local notifications
+      await _initializeLocalNotifications();
+
+      // Get FCM token
+      _fcmToken = await _firebaseMessaging.getToken();
+      if (kDebugMode) {
+        print('✅ FCM Token: $_fcmToken');
+      }
+
+      // Send token to backend
+      if (_fcmToken != null) {
+        await apiService.saveFcmToken(_fcmToken!);
+        if (kDebugMode) {
+          print('✅ FCM token saved to backend');
+        }
+      }
+
+      // Handle token refresh
+      _firebaseMessaging.onTokenRefresh.listen((newToken) {
+        _fcmToken = newToken;
+        apiService.saveFcmToken(newToken);
+        if (kDebugMode) {
+          print('🔄 FCM token refreshed: $newToken');
+        }
+      });
+
+      // Handle foreground messages
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+
+      // Handle background messages
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleBackgroundMessage);
+
+      // Handle notification tap when app is terminated
+      RemoteMessage? initialMessage = await _firebaseMessaging
+          .getInitialMessage();
+      if (initialMessage != null) {
+        _handleBackgroundMessage(initialMessage);
+      }
+
+      if (kDebugMode) {
+        print('✅ Notification service initialized');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error initializing notifications: $e');
+      }
+    }
+  }
+
+  /// Initialize local notifications for foreground display
+  Future<void> _initializeLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
+
+    await _localNotifications.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _onNotificationTapped,
+    );
+
+    // Create notification channel for Android
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'task_updates', // id
+      'Task Updates', // name
+      description: 'Notifications for task updates and assignments',
+      importance: Importance.high,
+      playSound: true,
+    );
+
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(channel);
+  }
+
+  /// Handle foreground messages (show local notification)
+  void _handleForegroundMessage(RemoteMessage message) {
+    if (kDebugMode) {
+      print('📩 Foreground message: ${message.notification?.title}');
+    }
+
+    final notification = message.notification;
+    if (notification != null) {
+      _showLocalNotification(
+        title: notification.title ?? 'New Notification',
+        body: notification.body ?? '',
+        payload: message.data['cardId']?.toString(),
+      );
+    }
+  }
+
+  /// Handle background/terminated messages (navigate to card)
+  void _handleBackgroundMessage(RemoteMessage message) {
+    if (kDebugMode) {
+      print('📬 Background message: ${message.notification?.title}');
+    }
+
+    final cardId = message.data['cardId'];
+    if (cardId != null) {
+      // Navigate to card detail
+      // This will be handled by the app's navigation system
+      _onNotificationTapped(
+        NotificationResponse(
+          notificationResponseType:
+              NotificationResponseType.selectedNotification,
+          payload: cardId.toString(),
+        ),
+      );
+    }
+  }
+
+  /// Show local notification
+  Future<void> _showLocalNotification({
+    required String title,
+    required String body,
+    String? payload,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'task_updates',
+          'Task Updates',
+          channelDescription: 'Notifications for task updates and assignments',
+          importance: Importance.high,
+          priority: Priority.high,
+          showWhen: true,
+          icon: '@mipmap/ic_launcher',
+        );
+
+    const DarwinNotificationDetails iosDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails platformDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: iosDetails,
+    );
+
+    await _localNotifications.show(
+      DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      title,
+      body,
+      platformDetails,
+      payload: payload,
+    );
+  }
+
+  /// Handle notification tap
+  void _onNotificationTapped(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload != null) {
+      final cardId = int.tryParse(payload);
+      if (cardId != null) {
+        // Navigate to card detail
+        // This will be implemented in main.dart with a GlobalKey for navigation
+        if (kDebugMode) {
+          print('🔔 Notification tapped, navigating to card: $cardId');
+        }
+        // TODO: Implement navigation to card detail page
+        // navigatorKey.currentState?.pushNamed('/card-detail', arguments: cardId);
+      }
+    }
+  }
+
+  /// Remove FCM token when logging out
+  Future<void> clearToken(ApiService apiService) async {
+    try {
+      await apiService.removeFcmToken();
+      await _firebaseMessaging.deleteToken();
+      _fcmToken = null;
+      if (kDebugMode) {
+        print('✅ FCM token cleared');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Error clearing FCM token: $e');
+      }
+    }
+  }
+}

@@ -1,0 +1,540 @@
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { FaPlus, FaClock, FaComment, FaCheckCircle } from "react-icons/fa";
+import Link from "next/link";
+import { Priority, Status, ProjectRole } from "@prisma/client";
+import { formatDuration } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import AssignmentModal from "@/components/projects/AssignmentModal";
+import { usePusherEvent } from "@/lib/pusher-client";
+import { useToast } from "@/hooks/use-toast";
+
+interface KanbanBoardProps {
+  project: {
+    id: number;
+    members: Array<{
+      userId: number;
+      projectRole: ProjectRole;
+      user: {
+        id: number;
+        name: string;
+        email: string;
+      };
+    }>;
+    boards: Array<{
+      id: number;
+      name: string;
+      cards: Array<{
+        id: number;
+        title: string;
+        description: string | null;
+        priority: Priority;
+        status: Status;
+        dueDate: Date | null;
+        assigneeId: number | null;
+        creator: {
+          id: number;
+          name: string;
+        };
+        subtasks: Array<{
+          id: number;
+          status: Status;
+        }>;
+        comments: Array<{
+          id: number;
+        }>;
+        timeLogs: Array<{
+          id: number;
+          durationMinutes: number | null;
+        }>;
+      }>;
+    }>;
+  };
+  userId: number;
+  userRole: ProjectRole | "LEADER" | null;
+  isCreator: boolean;
+}
+
+const priorityColors: Record<Priority, string> = {
+  LOW: "border-l-blue-500",
+  MEDIUM: "border-l-yellow-500",
+  HIGH: "border-l-red-500",
+};
+
+const priorityBadgeColors: Record<Priority, string> = {
+  LOW: "bg-blue-100 text-blue-800",
+  MEDIUM: "bg-yellow-100 text-yellow-800",
+  HIGH: "bg-red-100 text-red-800",
+};
+
+export default function KanbanBoard({
+  project,
+  userId,
+  userRole,
+  isCreator,
+}: KanbanBoardProps) {
+  const router = useRouter();
+  const { toast } = useToast();
+  const [boards, setBoards] = useState(project.boards);
+  const [movingCardId, setMovingCardId] = useState<number | null>(null);
+  const [assigningCardId, setAssigningCardId] = useState<number | null>(null);
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: "success" | "error";
+    message: string;
+    error?: {
+      message: string;
+      unfinishedCards?: Array<{
+        cardId: number;
+        title: string;
+        status: string;
+      }>;
+    };
+  }>({
+    isOpen: false,
+    type: "success",
+    message: "",
+  });
+  const canCreateCard = userRole === "LEADER" || isCreator;
+  const canMoveCard = userRole === "LEADER" || isCreator;
+  const canAssignCard = userRole === "LEADER" || isCreator;
+
+  // For members, only show cards assigned to them
+  const isMember = userRole !== "LEADER" && !isCreator;
+
+  // Realtime: Listen to card created
+  usePusherEvent(`project-${project.id}`, "card:created", (data) => {
+    const eventData = data as Record<string, unknown>;
+    const { card, boardId, userId: eventUserId } = eventData;
+    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    if (eventUserId !== userId) {
+      toast({
+        title: "New Card Created",
+        description: `Card "${typedCard.title}" was created`,
+      });
+    }
+
+    setBoards((prevBoards) =>
+      prevBoards.map((board) =>
+        board.id === boardId
+          ? { ...board, cards: [...board.cards, typedCard] }
+          : board
+      )
+    );
+  });
+
+  // Realtime: Listen to card updated
+  usePusherEvent(`project-${project.id}`, "card:updated", (data) => {
+    const eventData = data as Record<string, unknown>;
+    const { card, boardId, userId: eventUserId } = eventData;
+    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    if (eventUserId !== userId) {
+      toast({
+        title: "Card Updated",
+        description: `Card "${typedCard.title}" was updated`,
+      });
+    }
+
+    setBoards((prevBoards) =>
+      prevBoards.map((board) =>
+        board.id === boardId
+          ? {
+              ...board,
+              cards: board.cards.map((c) =>
+                c.id === typedCard.id ? typedCard : c
+              ),
+            }
+          : board
+      )
+    );
+  });
+
+  // Realtime: Listen to card deleted
+  usePusherEvent(`project-${project.id}`, "card:deleted", (data) => {
+    const eventData = data as Record<string, unknown>;
+    const { cardId, boardId, userId: eventUserId } = eventData;
+    if (eventUserId !== userId) {
+      toast({
+        title: "Card Deleted",
+        description: "A card was deleted",
+        variant: "destructive",
+      });
+    }
+
+    setBoards((prevBoards) =>
+      prevBoards.map((board) =>
+        board.id === boardId
+          ? { ...board, cards: board.cards.filter((c) => c.id !== cardId) }
+          : board
+      )
+    );
+  });
+
+  // Realtime: Listen to card assigned
+  usePusherEvent(`project-${project.id}`, "card:assigned", (data) => {
+    const eventData = data as Record<string, unknown>;
+    const { card, boardId, userId: eventUserId } = eventData;
+    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    if (eventUserId !== userId) {
+      toast({
+        title: "Card Assigned",
+        description: `Card "${typedCard.title}" was assigned`,
+      });
+    }
+
+    setBoards((prevBoards) =>
+      prevBoards.map((board) =>
+        board.id === boardId
+          ? {
+              ...board,
+              cards: board.cards.map((c) =>
+                c.id === typedCard.id ? typedCard : c
+              ),
+            }
+          : board
+      )
+    );
+  });
+
+  const filterCardsByUser = (cards: (typeof project.boards)[0]["cards"]) => {
+    if (isMember) {
+      return cards.filter((card) => card.assigneeId === userId);
+    }
+    return cards;
+  };
+
+  const handleMoveCard = async (cardId: number, newStatus: Status) => {
+    setMovingCardId(cardId);
+    try {
+      const response = await fetch(`/api/cards/${cardId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Show error modal
+        setModalState({
+          isOpen: true,
+          type: "error",
+          message: data.error || "Failed to move card",
+        });
+        return;
+      }
+
+      router.refresh();
+    } catch (error) {
+      console.error("Error moving card:", error);
+      setModalState({
+        isOpen: true,
+        type: "error",
+        message: "Failed to move card. Please try again.",
+      });
+    } finally {
+      setMovingCardId(null);
+    }
+  };
+
+  const handleAssignCard = async (cardId: number, assigneeId: string) => {
+    setAssigningCardId(cardId);
+    try {
+      const response = await fetch(`/api/cards/${cardId}/assign`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          assigneeId: assigneeId === "unassigned" ? null : parseInt(assigneeId),
+          reason: "Assigned via Kanban board",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Show error modal with details
+        setModalState({
+          isOpen: true,
+          type: "error",
+          message: data.message || "Failed to assign card",
+          error: data.unfinishedCards
+            ? {
+                message: data.message,
+                unfinishedCards: data.unfinishedCards,
+              }
+            : undefined,
+        });
+        return;
+      }
+
+      // Show success modal
+      setModalState({
+        isOpen: true,
+        type: "success",
+        message: "Card assigned successfully!",
+      });
+
+      // Refresh after a short delay
+      setTimeout(() => {
+        router.refresh();
+      }, 500);
+    } catch (error) {
+      console.error("Error assigning card:", error);
+      setModalState({
+        isOpen: true,
+        type: "error",
+        message: "Failed to assign card. Please try again.",
+      });
+    } finally {
+      setAssigningCardId(null);
+    }
+  };
+
+  // Group cards by status for Kanban view
+  const allCards = boards.flatMap((board) => board.cards);
+  const filteredCards = filterCardsByUser(allCards);
+
+  // Filter available members for assignment (exclude OBSERVER)
+  const getAvailableMembersForCard = () => {
+    return project.members.filter(
+      (member) => member.projectRole !== "OBSERVER"
+    );
+  };
+
+  const todoCards = filteredCards.filter((card) => card.status === "TODO");
+  const inProgressCards = filteredCards.filter(
+    (card) => card.status === "IN_PROGRESS"
+  );
+  const reviewCards = filteredCards.filter((card) => card.status === "REVIEW");
+  const doneCards = filteredCards.filter((card) => card.status === "DONE");
+
+  const columns = [
+    { title: "To Do", status: "TODO", cards: todoCards, color: "bg-gray-100" },
+    {
+      title: "In Progress",
+      status: "IN_PROGRESS",
+      cards: inProgressCards,
+      color: "bg-blue-50",
+    },
+    {
+      title: "Review",
+      status: "REVIEW",
+      cards: reviewCards,
+      color: "bg-purple-50",
+    },
+    { title: "Done", status: "DONE", cards: doneCards, color: "bg-green-50" },
+  ];
+
+  return (
+    <div className="container mx-auto p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {columns.map((column) => (
+          <div key={column.status} className="flex flex-col">
+            <Card className={`${column.color} border-2`}>
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <CardTitle className="text-lg font-semibold">
+                    {column.title}
+                  </CardTitle>
+                  <Badge variant="secondary">{column.cards.length}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {column.cards.map((card) => {
+                  const completedSubtasks = card.subtasks.filter(
+                    (st) => st.status === "DONE"
+                  ).length;
+                  const totalSubtasks = card.subtasks.length;
+                  const totalTime = card.timeLogs.reduce(
+                    (sum, log) => sum + (log.durationMinutes || 0),
+                    0
+                  );
+
+                  return (
+                    <Card
+                      key={card.id}
+                      className={`border-l-4 ${
+                        priorityColors[card.priority]
+                      } hover:shadow-md transition-shadow bg-white ${
+                        movingCardId === card.id ? "opacity-50" : ""
+                      }`}
+                    >
+                      <CardContent className="p-4 space-y-2">
+                        <div className="flex justify-between items-start gap-2">
+                          <Link href={`/cards/${card.id}`} className="flex-1">
+                            <h3 className="font-semibold text-sm line-clamp-2 hover:text-blue-600">
+                              {card.title}
+                            </h3>
+                          </Link>
+                          <Badge
+                            className={`${
+                              priorityBadgeColors[card.priority]
+                            } text-xs`}
+                          >
+                            {card.priority}
+                          </Badge>
+                        </div>
+
+                        {card.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {card.description}
+                          </p>
+                        )}
+
+                        {/* Move Card Dropdown */}
+                        {canMoveCard && (
+                          <div
+                            className="pt-2 border-t space-y-2"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Select
+                              value={card.status}
+                              onValueChange={(value) =>
+                                handleMoveCard(card.id, value as Status)
+                              }
+                              disabled={movingCardId === card.id}
+                            >
+                              <SelectTrigger className="w-full h-7 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="TODO">📋 To Do</SelectItem>
+                                <SelectItem value="IN_PROGRESS">
+                                  🔥 In Progress
+                                </SelectItem>
+                                <SelectItem value="REVIEW">
+                                  👀 Review
+                                </SelectItem>
+                                <SelectItem value="DONE">✅ Done</SelectItem>
+                              </SelectContent>
+                            </Select>
+
+                            {/* Assign Card Dropdown */}
+                            {canAssignCard && (
+                              <Select
+                                value={
+                                  card.assigneeId?.toString() || "unassigned"
+                                }
+                                onValueChange={(value) =>
+                                  handleAssignCard(card.id, value)
+                                }
+                                disabled={assigningCardId === card.id}
+                              >
+                                <SelectTrigger className="w-full h-7 text-xs">
+                                  <SelectValue placeholder="👤 Assign to..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="unassigned">
+                                    👤 Unassigned
+                                  </SelectItem>
+                                  {getAvailableMembersForCard().map(
+                                    (member) => (
+                                      <SelectItem
+                                        key={member.userId}
+                                        value={member.userId.toString()}
+                                      >
+                                        {member.user.name}
+                                        {member.userId === card.assigneeId &&
+                                          " (current)"}
+                                        {member.projectRole === "LEADER" &&
+                                          " 👑"}
+                                      </SelectItem>
+                                    )
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Card metadata */}
+                        <div className="flex items-center gap-3 text-xs text-gray-500 pt-2">
+                          {totalSubtasks > 0 && (
+                            <div className="flex items-center gap-1">
+                              <FaCheckCircle className="w-3 h-3" />
+                              <span>
+                                {completedSubtasks}/{totalSubtasks}
+                              </span>
+                            </div>
+                          )}
+                          {card.comments.length > 0 && (
+                            <div className="flex items-center gap-1">
+                              <FaComment className="w-3 h-3" />
+                              <span>{card.comments.length}</span>
+                            </div>
+                          )}
+                          {totalTime > 0 && (
+                            <div className="flex items-center gap-1">
+                              <FaClock className="w-3 h-3" />
+                              <span>{formatDuration(totalTime)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-xs text-gray-400 pt-1 border-t flex justify-between items-center">
+                          <span>by {card.creator.name}</span>
+                          {card.assigneeId && (
+                            <span className="text-blue-600 font-medium">
+                              →{" "}
+                              {project.members.find(
+                                (m) => m.userId === card.assigneeId
+                              )?.user.name || "Unknown"}
+                            </span>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+
+                {/* Add Card Button */}
+                {canCreateCard && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-dashed"
+                    asChild
+                  >
+                    <Link href={`/projects/${project.id}/cards/new`}>
+                      <FaPlus className="mr-2" />
+                      Add Card
+                    </Link>
+                  </Button>
+                )}
+
+                {column.cards.length === 0 && !canCreateCard && (
+                  <p className="text-center text-gray-400 text-sm py-8">
+                    No cards yet
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        ))}
+      </div>
+
+      {/* Assignment Modal */}
+      <AssignmentModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+        type={modalState.type}
+        message={modalState.message}
+        error={modalState.error}
+      />
+    </div>
+  );
+}
