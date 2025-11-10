@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, description, members } = body;
+    const { name, description, deadline, members } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -225,6 +225,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
+        deadline: deadline ? new Date(deadline) : null,
         createdBy: userId,
         members: {
           create: [

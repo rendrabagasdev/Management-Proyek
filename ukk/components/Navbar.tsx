@@ -14,6 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RoleBadge } from "@/components/RoleBadge";
+import { NotificationBell } from "@/components/NotificationBell";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { useSettings } from "@/components/SettingsProvider";
 import {
   FaUser,
   FaSignOutAlt,
@@ -24,12 +27,12 @@ import {
   FaPlus,
   FaBars,
   FaTimes,
-  FaUsers,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const { data: session } = useSession();
+  const { settings } = useSettings();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -63,22 +66,11 @@ export function Navbar() {
       },
     ];
 
-    const leaderLinks = [
-      {
-        href: "/leader/team",
-        label: "My Team",
-        icon: FaUsers,
-        roles: ["ADMIN", "LEADER"],
-      },
-    ];
-
     let links = [...baseLinks];
 
     // Add role-specific links
     if (userRole === "ADMIN") {
-      links = [...links, ...adminLinks, ...leaderLinks];
-    } else if (userRole === "LEADER") {
-      links = [...links, ...leaderLinks];
+      links = [...links, ...adminLinks];
     }
 
     return links.filter((link) => link.roles.includes(userRole));
@@ -87,15 +79,17 @@ export function Navbar() {
   const navLinks = getNavLinks();
 
   return (
-    <nav className="border-b bg-white sticky top-0 z-50 shadow-sm">
+    <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="p-2 bg-blue-600 rounded-lg">
+            <div className="p-2 bg-(--theme-primary) rounded-lg">
               <FaTasks className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl">UKK Project</span>
+            <span className="font-bold text-xl">
+              {settings.app_name || "UKK Project"}
+            </span>
           </Link>
 
           {/* Desktop Navigation Links */}
@@ -111,7 +105,8 @@ export function Navbar() {
                     size="sm"
                     className={cn(
                       "space-x-2",
-                      isActive && "bg-blue-600 text-white hover:bg-blue-700"
+                      isActive &&
+                        "bg-(--theme-primary) text-white hover:bg-(--theme-primary-dark)"
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -124,13 +119,15 @@ export function Navbar() {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-3">
+            <ThemeToggle />
+            <NotificationBell />
             <RoleBadge role={session.user.role} size="sm" />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="space-x-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <FaUser className="w-4 h-4 text-blue-600" />
+                  <div className="w-8 h-8 bg-(--theme-primary) rounded-full flex items-center justify-center">
+                    <FaUser className="w-4 h-4 text-primary-foreground" />
                   </div>
                   <span className="hidden lg:inline">{session.user.name}</span>
                 </Button>
@@ -139,7 +136,7 @@ export function Navbar() {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{session.user.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {session.user.email}
                     </p>
                   </div>
@@ -193,6 +190,8 @@ export function Navbar() {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
+            <ThemeToggle />
+            <NotificationBell />
             <RoleBadge role={session.user.role} size="sm" />
             <Button
               variant="ghost"
@@ -212,9 +211,11 @@ export function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden border-t py-4 space-y-2">
             {/* User Info */}
-            <div className="px-4 py-2 bg-gray-50 rounded-lg mb-3">
+            <div className="px-4 py-2 bg-muted rounded-lg mb-3">
               <p className="text-sm font-medium">{session.user.name}</p>
-              <p className="text-xs text-gray-500">{session.user.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {session.user.email}
+              </p>
             </div>
 
             {/* Navigation Links */}
@@ -229,7 +230,9 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
                     "flex items-center space-x-3 px-4 py-2 rounded-lg transition-colors",
-                    isActive ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+                    isActive
+                      ? "bg-(--theme-primary) text-white"
+                      : "hover:bg-muted"
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -241,7 +244,7 @@ export function Navbar() {
             {/* Sign Out */}
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-gray-100 w-full text-left text-red-600"
+              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-muted w-full text-left text-(--theme-danger)"
             >
               <FaSignOutAlt className="w-4 h-4" />
               <span>Sign Out</span>

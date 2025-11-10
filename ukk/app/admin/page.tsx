@@ -20,6 +20,7 @@ import {
   FaClock,
   FaChartLine,
   FaUserCog,
+  FaCog,
 } from "react-icons/fa";
 import { ExportData } from "@/components/admin/ExportData";
 import { SystemActivity } from "@/components/admin/SystemActivity";
@@ -193,12 +194,20 @@ export default async function AdminOverviewPage() {
             System overview and management tools
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/users">
-            <FaUserCog className="mr-2" />
-            Manage Users
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/admin/settings">
+              <FaCog className="mr-2" />
+              Settings
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/admin/users">
+              <FaUserCog className="mr-2" />
+              Manage Users
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -207,7 +216,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardDescription>Total Users</CardDescription>
-              <FaUsers className="w-4 h-4 text-blue-600" />
+              <FaUsers className="w-4 h-4 text-(--theme-primary)" />
             </div>
             <CardTitle className="text-3xl">{totalUsers}</CardTitle>
           </CardHeader>
@@ -223,7 +232,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardDescription>Projects</CardDescription>
-              <FaProjectDiagram className="w-4 h-4 text-green-600" />
+              <FaProjectDiagram className="w-4 h-4 text-(--theme-success)" />
             </div>
             <CardTitle className="text-3xl">{totalProjects}</CardTitle>
           </CardHeader>
@@ -238,7 +247,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardDescription>Total Tasks</CardDescription>
-              <FaTasks className="w-4 h-4 text-purple-600" />
+              <FaTasks className="w-4 h-4 text-(--theme-secondary)" />
             </div>
             <CardTitle className="text-3xl">{totalCards}</CardTitle>
           </CardHeader>
@@ -253,7 +262,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardDescription>Comments</CardDescription>
-              <FaComments className="w-4 h-4 text-orange-600" />
+              <FaComments className="w-4 h-4 text-(--theme-accent)" />
             </div>
             <CardTitle className="text-3xl">{totalComments}</CardTitle>
           </CardHeader>
@@ -268,7 +277,7 @@ export default async function AdminOverviewPage() {
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardDescription>Time Logs</CardDescription>
-              <FaClock className="w-4 h-4 text-pink-600" />
+              <FaClock className="w-4 h-4 text-(--theme-info)" />
             </div>
             <CardTitle className="text-3xl">{totalTimeLogs}</CardTitle>
           </CardHeader>
@@ -293,9 +302,9 @@ export default async function AdminOverviewPage() {
                   {statusStats.TODO} tasks
                 </span>
               </div>
-              <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gray-600"
+                  className="h-full bg-muted-foreground/60"
                   style={{
                     width: `${
                       totalCards > 0 ? (statusStats.TODO / totalCards) * 100 : 0
@@ -307,16 +316,19 @@ export default async function AdminOverviewPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-blue-100">
+                <Badge
+                  variant="outline"
+                  className="bg-(--theme-primary)/10 text-(--theme-primary)"
+                >
                   In Progress
                 </Badge>
                 <span className="text-sm text-muted-foreground">
                   {statusStats.IN_PROGRESS} tasks
                 </span>
               </div>
-              <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-600"
+                  className="h-full bg-(--theme-primary)"
                   style={{
                     width: `${
                       totalCards > 0
@@ -330,16 +342,19 @@ export default async function AdminOverviewPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-yellow-100">
+                <Badge
+                  variant="outline"
+                  className="bg-(--theme-warning)/10 text-(--theme-warning)"
+                >
                   Review
                 </Badge>
                 <span className="text-sm text-muted-foreground">
                   {statusStats.REVIEW} tasks
                 </span>
               </div>
-              <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-yellow-600"
+                  className="h-full bg-(--theme-warning)"
                   style={{
                     width: `${
                       totalCards > 0
@@ -353,16 +368,19 @@ export default async function AdminOverviewPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="bg-green-100">
+                <Badge
+                  variant="outline"
+                  className="bg-(--theme-success)/10 text-(--theme-success)"
+                >
                   Done
                 </Badge>
                 <span className="text-sm text-muted-foreground">
                   {statusStats.DONE} tasks
                 </span>
               </div>
-              <div className="w-48 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-green-600"
+                  className="h-full bg-(--theme-success)"
                   style={{
                     width: `${
                       totalCards > 0 ? (statusStats.DONE / totalCards) * 100 : 0
@@ -375,7 +393,7 @@ export default async function AdminOverviewPage() {
             <div className="pt-4 border-t">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Completion Rate</span>
-                <span className="text-2xl font-bold text-green-600">
+                <span className="text-2xl font-bold text-(--theme-success)">
                   {completionRate}%
                 </span>
               </div>
@@ -409,10 +427,10 @@ export default async function AdminOverviewPage() {
                       variant="outline"
                       className={
                         user.globalRole === "ADMIN"
-                          ? "bg-red-100"
+                          ? "bg-(--theme-danger)/10 text-(--theme-danger)"
                           : user.globalRole === "LEADER"
-                          ? "bg-purple-100"
-                          : "bg-blue-100"
+                          ? "bg-(--theme-secondary)/10 text-(--theme-secondary)"
+                          : "bg-(--theme-primary)/10 text-(--theme-primary)"
                       }
                     >
                       {user.globalRole}
@@ -449,7 +467,7 @@ export default async function AdminOverviewPage() {
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="block p-3 border rounded-lg hover:bg-gray-50 transition"
+                  className="block p-3 border rounded-lg hover:bg-muted/50 transition"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -460,7 +478,7 @@ export default async function AdminOverviewPage() {
                     </div>
                     <Badge
                       variant="outline"
-                      className="bg-green-100 text-green-800"
+                      className="bg-(--theme-success)pacity-10 text-(--theme-success)"
                     >
                       {project.members.length} members
                     </Badge>
@@ -487,7 +505,7 @@ export default async function AdminOverviewPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FaProjectDiagram className="w-5 h-5 text-blue-600" />
+              <FaProjectDiagram className="w-5 h-5 text-(--theme-primary)" />
               Recently Completed Projects
             </CardTitle>
             <CardDescription>
@@ -500,7 +518,7 @@ export default async function AdminOverviewPage() {
                 <Link
                   key={project.id}
                   href={`/projects/${project.id}`}
-                  className="block p-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition"
+                  className="block p-3 border border-(--theme-primary) border-opacity-30 rounded-lg hover:bg-(--theme-primary)/10  transition"
                 >
                   <div className="flex items-start justify-between">
                     <div>
@@ -508,7 +526,7 @@ export default async function AdminOverviewPage() {
                         <p className="font-medium">{project.name}</p>
                         <Badge
                           variant="outline"
-                          className="bg-blue-100 text-blue-800"
+                          className="bg-(--theme-primary)/10 text-(--theme-primary)"
                         >
                           Completed
                         </Badge>
@@ -518,7 +536,7 @@ export default async function AdminOverviewPage() {
                         members
                       </p>
                       {project.completedAt && (
-                        <p className="text-xs text-blue-600 mt-1">
+                        <p className="text-xs text-(--theme-primary) mt-1">
                           Completed on{" "}
                           {new Date(project.completedAt).toLocaleDateString()}
                         </p>
@@ -553,7 +571,7 @@ export default async function AdminOverviewPage() {
               <Link
                 key={card.id}
                 href={`/cards/${card.id}`}
-                className="block p-3 border rounded-lg hover:bg-gray-50 transition"
+                className="block p-3 border rounded-lg hover:bg-muted/50 transition"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
@@ -575,12 +593,12 @@ export default async function AdminOverviewPage() {
                       variant={card.status === "DONE" ? "default" : "secondary"}
                       className={
                         card.status === "TODO"
-                          ? "bg-gray-100"
+                          ? "bg-muted text-muted-foreground"
                           : card.status === "IN_PROGRESS"
-                          ? "bg-blue-100 text-blue-800"
+                          ? "bg-(--theme-primary)/10 text-(--theme-primary)"
                           : card.status === "REVIEW"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-green-100 text-green-800"
+                          ? "bg-(--theme-warning)pacity-10 text-(--theme-warning)"
+                          : "bg-(--theme-success)/10 text-(--theme-success)"
                       }
                     >
                       {card.status.replace("_", " ")}
@@ -588,10 +606,10 @@ export default async function AdminOverviewPage() {
                     <Badge
                       className={`text-xs ${
                         card.priority === "HIGH"
-                          ? "bg-red-100 text-red-800 border-red-200"
+                          ? "bg-(--theme-danger)pacity-10 text-(--theme-danger)er-(--theme-danger) border-opacity-30"
                           : card.priority === "MEDIUM"
-                          ? "bg-yellow-100 text-yellow-800 border-yellow-200"
-                          : "bg-blue-100 text-blue-800 border-blue-200"
+                          ? "bg-(--theme-warning)pacity-10 text-(--theme-warning) border-(--theme-warning) border-opacity-30"
+                          : "bg-(--theme-primary)/10 text-(--theme-primary) border-(--theme-primary) border-opacity-30"
                       }`}
                       variant="outline"
                     >
@@ -631,7 +649,7 @@ export default async function AdminOverviewPage() {
                   className="flex items-center justify-between p-3 border rounded-lg"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center font-bold text-blue-600">
+                    <div className="w-8 h-8 rounded-full bg-(--theme-primary)/10 flex items-center justify-center font-bold text-(--theme-primary)">
                       #{index + 1}
                     </div>
                     <div>

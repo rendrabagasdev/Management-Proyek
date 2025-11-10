@@ -106,7 +106,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const isCreator = isAdmin;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <ProjectHeader
         project={project}
         userRole={userProjectRole}

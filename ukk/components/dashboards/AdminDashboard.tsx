@@ -62,29 +62,29 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
       title: "Total Users",
       value: users.length,
       icon: FaUsers,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-(--theme-primary)",
+      bgColor: "bg-(--theme-primary)/10",
     },
     {
       title: "Active Projects",
       value: projects.length,
       icon: FaProjectDiagram,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-(--theme-success)",
+      bgColor: "bg-(--theme-success)/10",
     },
     {
       title: "Total Tasks",
       value: totalCards,
       icon: FaTasks,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      color: "text-(--theme-secondary)",
+      bgColor: "bg-(--theme-secondary)/10",
     },
     {
       title: "Completed",
       value: completedCards,
       icon: FaChartLine,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "text-(--theme-accent)",
+      bgColor: "bg-(--theme-accent)/10",
     },
   ];
 
@@ -93,7 +93,9 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-gray-500">System overview and statistics</p>
+          <p className="text-muted-foreground">
+            System overview and statistics
+          </p>
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
@@ -118,7 +120,7 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
           return (
             <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -145,7 +147,7 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
             <span>Total: {totalCards}</span>
           </div>
           <Progress value={progressPercentage} className="h-2" />
-          <p className="text-sm text-gray-500 text-right">
+          <p className="text-sm text-muted-foreground text-right">
             {progressPercentage.toFixed(1)}% Complete
           </p>
         </CardContent>
@@ -180,12 +182,12 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
               return (
                 <div
                   key={project.id}
-                  className="p-4 border rounded-lg hover:bg-gray-50 transition"
+                  className="p-4 border rounded-lg hover:bg-muted/50 transition"
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <h3 className="font-semibold">{project.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         by {project.creator.name} • {project.members.length}{" "}
                         members
                       </p>
@@ -199,7 +201,9 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
               );
             })}
             {projects.length === 0 && (
-              <p className="text-center text-gray-500 py-8">No projects yet</p>
+              <p className="text-center text-muted-foreground py-8">
+                No projects yet
+              </p>
             )}
           </div>
         </CardContent>

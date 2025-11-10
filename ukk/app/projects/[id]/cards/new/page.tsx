@@ -117,14 +117,14 @@ export default function NewCardPage({ params }: NewCardPageProps) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-(--theme-danger-light)/10 border border-(--theme-danger-light) text-(--theme-danger-dark) px-4 py-3 rounded">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="title" className="text-sm font-medium">
-                Card Title <span className="text-red-500">*</span>
+                Card Title <span className="text-(--theme-danger)">*</span>
               </label>
               <Input
                 id="title"
@@ -158,7 +158,7 @@ export default function NewCardPage({ params }: NewCardPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label htmlFor="boardId" className="text-sm font-medium">
-                  Board <span className="text-red-500">*</span>
+                  Board <span className="text-(--theme-danger)">*</span>
                 </label>
                 <select
                   id="boardId"

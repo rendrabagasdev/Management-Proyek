@@ -152,7 +152,9 @@ export default async function ProjectsPage() {
               <Link key={project.id} href={`/projects/${project.id}`}>
                 <Card
                   className={`hover:shadow-lg transition-shadow cursor-pointer h-full ${
-                    project.isCompleted ? "border-blue-300 bg-blue-50/30" : ""
+                    project.isCompleted
+                      ? "border-(--theme-primary)er-opacity-40 bg-(--theme-primary) bg-opacity-5"
+                      : ""
                   }`}
                 >
                   <CardHeader>
@@ -162,13 +164,16 @@ export default async function ProjectsPage() {
                         {project.isCompleted && (
                           <Badge
                             variant="outline"
-                            className="bg-blue-100 text-blue-800 border-blue-300"
+                            className="bg-(--theme-primary)pacity-10 text-(--theme-primary) border-(--theme-primary) border-opacity-30"
                           >
                             Completed
                           </Badge>
                         )}
                         {isCreator && (
-                          <Badge variant="default" className="bg-blue-500">
+                          <Badge
+                            variant="default"
+                            className="bg-(--theme-primary)"
+                          >
                             Owner
                           </Badge>
                         )}

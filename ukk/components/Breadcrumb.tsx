@@ -74,24 +74,24 @@ export function Breadcrumb() {
   }
 
   return (
-    <div className="border-b bg-gray-50">
+    <div className="border-b bg-muted/50">
       <div className="container mx-auto px-6 py-3">
         <nav className="flex items-center space-x-2 text-sm">
           {breadcrumbs.map((crumb, index) => (
             <Fragment key={index}>
               {index > 0 && (
-                <FaChevronRight className="w-3 h-3 text-gray-400" />
+                <FaChevronRight className="w-3 h-3 text-muted-foreground/60" />
               )}
               {crumb.href ? (
                 <Link
                   href={crumb.href}
-                  className="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                  className="text-(--theme-primary) hover:text-(--theme-primary-dark) hover:underline flex items-center gap-1"
                 >
                   {index === 0 && <FaHome className="w-3 h-3" />}
                   <span>{crumb.label}</span>
                 </Link>
               ) : (
-                <span className="text-gray-700 font-medium flex items-center gap-1">
+                <span className="text-foreground font-medium flex items-center gap-1">
                   {index === 0 && <FaHome className="w-3 h-3" />}
                   <span>{crumb.label}</span>
                 </span>

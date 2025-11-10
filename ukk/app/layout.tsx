@@ -6,6 +6,8 @@ import { Navbar } from "@/components/Navbar";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import SessionProvider from "@/components/SessionProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SettingsProvider } from "@/components/SettingsProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,21 +38,30 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SessionProvider session={session}>
-          <NotificationProvider>
-            {session && (
-              <>
-                <Navbar />
-                <Breadcrumb />
-              </>
-            )}
-            {children}
-          </NotificationProvider>
-        </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SettingsProvider>
+            <SessionProvider session={session}>
+              <NotificationProvider>
+                {session && (
+                  <>
+                    <Navbar />
+                    <Breadcrumb />
+                  </>
+                )}
+                {children}
+              </NotificationProvider>
+            </SessionProvider>
+          </SettingsProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -152,29 +152,29 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
       title: "Total Tasks",
       value: totalCards,
       icon: FaTasks,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-(--theme-primary)",
+      bgColor: "bg-[var(--theme-primary-light)]",
     },
     {
       title: "Completed",
       value: completedCards,
       icon: FaCheckCircle,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-[var(--theme-success)]",
+      bgColor: "bg-[var(--theme-success-light)]",
     },
     {
       title: "In Progress",
       value: inProgressCards,
       icon: FaFire,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "text-[var(--theme-accent)]",
+      bgColor: "bg-[var(--theme-accent-light)]",
     },
     {
       title: "Time Spent",
       value: formatDuration(totalTimeSpent),
       icon: FaClock,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+      color: "text-[var(--theme-secondary)]",
+      bgColor: "bg-[var(--theme-secondary-light)]",
       isString: true,
     },
   ];
@@ -185,16 +185,16 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <FaChartBar className="text-blue-600" />
+            <FaChartBar className="text-(--theme-primary)" />
             Project Analytics
           </h1>
-          <p className="text-gray-500 mt-1">{project.name}</p>
+          <p className="text-muted-foreground mt-1">{project.name}</p>
         </div>
         <Link
           href={`/projects/${project.id}`}
-          className="text-blue-600 hover:underline"
+          className="text-(--theme-primary) hover:underline font-medium"
         >
-          Back to Project
+          ← Back to Project
         </Link>
       </div>
 
@@ -205,10 +205,12 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
           return (
             <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
-                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                <div
+                  className={`p-2 rounded-lg ${stat.bgColor} dark:opacity-80`}
+                >
                   <Icon className={`w-4 h-4 ${stat.color}`} />
                 </div>
               </CardHeader>
@@ -229,20 +231,20 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
           <div>
             <div className="flex justify-between mb-2">
               <span className="text-sm font-medium">Project Completion</span>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-muted-foreground">
                 {completedCards} / {totalCards} tasks
               </span>
             </div>
             <Progress value={overallProgress} className="h-3" />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {overallProgress.toFixed(1)}% complete
             </p>
           </div>
 
           {overdueTasks.length > 0 && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <FaExclamationTriangle className="text-red-600" />
-              <span className="text-sm text-red-800">
+            <div className="flex items-center gap-2 p-3 bg-(--theme-danger-light) border border-(--theme-danger-light) rounded-lg">
+              <FaExclamationTriangle className="text-(--theme-danger)" />
+              <span className="text-sm text-(--theme-danger-dark)">
                 {overdueTasks.length} overdue task
                 {overdueTasks.length > 1 ? "s" : ""} need attention
               </span>
@@ -252,10 +254,28 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
       </Card>
 
       <Tabs defaultValue="team" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="team">Team Performance</TabsTrigger>
-          <TabsTrigger value="tasks">Task Breakdown</TabsTrigger>
-          <TabsTrigger value="activity">Recent Activity</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-auto p-1">
+          <TabsTrigger
+            value="team"
+            className="data-[state=active]:bg-(--theme-primary) data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <FaUsers className="mr-2 w-4 h-4" />
+            Team Performance
+          </TabsTrigger>
+          <TabsTrigger
+            value="tasks"
+            className="data-[state=active]:bg-(--theme-primary) data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <FaTasks className="mr-2 w-4 h-4" />
+            Task Breakdown
+          </TabsTrigger>
+          <TabsTrigger
+            value="activity"
+            className="data-[state=active]:bg-(--theme-primary) data-[state=active]:text-white data-[state=active]:shadow-lg transition-all duration-200"
+          >
+            <FaClock className="mr-2 w-4 h-4" />
+            Recent Activity
+          </TabsTrigger>
         </TabsList>
 
         {/* Team Performance */}
@@ -277,7 +297,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold">{member.user.name}</h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {member.user.email}
                         </p>
                         <div className="flex gap-2 mt-1">
@@ -291,31 +311,41 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                         <div className="text-2xl font-bold">
                           {member.completionRate.toFixed(0)}%
                         </div>
-                        <p className="text-xs text-gray-500">completion rate</p>
+                        <p className="text-xs text-muted-foreground">
+                          completion rate
+                        </p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t">
                       <div>
-                        <p className="text-xs text-gray-500">Assigned</p>
+                        <p className="text-xs text-muted-foreground">
+                          Assigned
+                        </p>
                         <p className="text-lg font-semibold">
                           {member.assignedCards}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Completed</p>
-                        <p className="text-lg font-semibold text-green-600">
+                        <p className="text-xs text-muted-foreground">
+                          Completed
+                        </p>
+                        <p className="text-lg font-semibold text-(--theme-success)">
                           {member.completedCards}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Time Logged</p>
+                        <p className="text-xs text-muted-foreground">
+                          Time Logged
+                        </p>
                         <p className="text-lg font-semibold">
                           {formatDuration(member.timeSpent)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Comments</p>
+                        <p className="text-xs text-muted-foreground">
+                          Comments
+                        </p>
                         <p className="text-lg font-semibold">
                           {member.commentsCount}
                         </p>
@@ -341,7 +371,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">High Priority</span>
-                    <Badge className="bg-red-100 text-red-800">
+                    <Badge className="bg-(--theme-danger-light) text-(--theme-danger-dark)">
                       {highPriorityCards}
                     </Badge>
                   </div>
@@ -358,7 +388,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Medium Priority</span>
-                    <Badge className="bg-yellow-100 text-yellow-800">
+                    <Badge className="bg-(--theme-accent-light) text-(--theme-accent-dark)">
                       {mediumPriorityCards}
                     </Badge>
                   </div>
@@ -375,7 +405,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Low Priority</span>
-                    <Badge className="bg-blue-100 text-blue-800">
+                    <Badge className="bg-(--theme-primary-light) text-(--theme-primary-dark)">
                       {lowPriorityCards}
                     </Badge>
                   </div>
@@ -416,7 +446,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">In Progress</span>
-                    <Badge className="bg-blue-100 text-blue-800">
+                    <Badge className="bg-(--theme-primary-light) text-(--theme-primary-dark)">
                       {inProgressCards}
                     </Badge>
                   </div>
@@ -431,7 +461,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Review</span>
-                    <Badge className="bg-purple-100 text-purple-800">
+                    <Badge className="bg-(--theme-secondary-light) text-(--theme-secondary-dark)">
                       {allCards.filter((c) => c.status === "REVIEW").length}
                     </Badge>
                   </div>
@@ -451,7 +481,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Done</span>
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge className="bg-(--theme-success-light) text-(--theme-success-dark)">
                       {completedCards}
                     </Badge>
                   </div>
@@ -464,7 +494,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
           {overdueTasks.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-red-600">
+                <CardTitle className="flex items-center gap-2 text-(--theme-danger)">
                   <FaExclamationTriangle />
                   Overdue Tasks ({overdueTasks.length})
                 </CardTitle>
@@ -475,16 +505,16 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                     <Link
                       key={task.id}
                       href={`/cards/${task.id}`}
-                      className="block p-3 border rounded-lg hover:bg-gray-50"
+                      className="block p-3 border rounded-lg hover:bg-muted/50"
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-semibold">{task.title}</h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-muted-foreground">
                             Due: {new Date(task.dueDate!).toLocaleDateString()}
                           </p>
                         </div>
-                        <Badge className="bg-red-100 text-red-800">
+                        <Badge className="bg-(--theme-danger-light) text-(--theme-danger-dark)">
                           {task.priority}
                         </Badge>
                       </div>
@@ -508,12 +538,12 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                   <Link
                     key={card.id}
                     href={`/cards/${card.id}`}
-                    className="block p-4 border rounded-lg hover:bg-gray-50"
+                    className="block p-4 border rounded-lg hover:bg-muted/50"
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-semibold">{card.title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Created by {card.creator.name} •{" "}
                           {new Date(card.createdAt).toLocaleDateString()}
                         </p>
@@ -529,10 +559,10 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
                         <Badge
                           className={
                             card.priority === "HIGH"
-                              ? "bg-red-100 text-red-800"
+                              ? "bg-(--theme-danger-light) text-(--theme-danger-dark)"
                               : card.priority === "MEDIUM"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-blue-100 text-blue-800"
+                              ? "bg-(--theme-accent-light) text-(--theme-accent-dark)"
+                              : "bg-(--theme-primary-light) text-(--theme-primary-dark)"
                           }
                         >
                           {card.priority}

@@ -45,6 +45,11 @@ import {
 } from "react-icons/fa";
 import { Priority, Status, ProjectRole } from "@prisma/client";
 import { formatDuration, formatRelativeTime } from "@/lib/utils";
+import {
+  DeadlineBadge,
+  DeadlineProgress,
+  DeadlineAlert,
+} from "@/components/DeadlineBadge";
 import AssignmentModal from "@/components/projects/AssignmentModal";
 
 interface CardDetailProps {
@@ -55,6 +60,7 @@ interface CardDetailProps {
     priority: Priority;
     status: Status;
     dueDate: Date | null;
+    deadline: Date | null;
     assigneeId: number | null;
     createdAt: Date;
     updatedAt: Date;
@@ -112,16 +118,16 @@ interface CardDetailProps {
 }
 
 const priorityColors: Record<Priority, string> = {
-  LOW: "bg-blue-100 text-blue-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  HIGH: "bg-red-100 text-red-800",
+  LOW: "bg-(--theme-primary)/10 text-(--theme-primary)",
+  MEDIUM: "bg-(--theme-warning)/10 text-(--theme-warning)",
+  HIGH: "bg-(--theme-danger)/10 text-(--theme-danger)",
 };
 
 const statusColors: Record<Status, string> = {
-  TODO: "bg-gray-100 text-gray-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  REVIEW: "bg-purple-100 text-purple-800",
-  DONE: "bg-green-100 text-green-800",
+  TODO: "bg-muted text-muted-foreground",
+  IN_PROGRESS: "bg-(--theme-primary)/10 text-(--theme-primary)",
+  REVIEW: "bg-(--theme-secondary)/10 text-(--theme-secondary)",
+  DONE: "bg-(--theme-success)/10 text-(--theme-success)",
 };
 
 export default function CardDetail({
@@ -148,6 +154,9 @@ export default function CardDetail({
     status: card.status,
     dueDate: card.dueDate
       ? new Date(card.dueDate).toISOString().split("T")[0]
+      : "",
+    deadline: card.deadline
+      ? new Date(card.deadline).toISOString().slice(0, 16)
       : "",
   });
 
@@ -503,15 +512,25 @@ export default function CardDetail({
           priority: editForm.priority,
           status: editForm.status,
           dueDate: editForm.dueDate || null,
+          deadline: editForm.deadline || null,
         }),
       });
 
       if (response.ok) {
         setEditDialogOpen(false);
         router.refresh();
+        toast({
+          title: "Success",
+          description: "Card updated successfully",
+        });
       }
     } catch (error) {
       console.error("Failed to edit card:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update card",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -633,6 +652,24 @@ export default function CardDetail({
                   )}
                 </div>
 
+                {/* Deadline Alert */}
+                {card.deadline && (
+                  <DeadlineAlert
+                    deadline={card.deadline}
+                    title="Card Deadline"
+                    className="mb-4"
+                  />
+                )}
+
+                {/* Deadline Progress */}
+                {card.deadline && (
+                  <DeadlineProgress
+                    deadline={card.deadline}
+                    createdAt={card.createdAt}
+                    className="mb-4"
+                  />
+                )}
+
                 {/* Description */}
                 <div>
                   <h3 className="font-semibold mb-2">Description</h3>
@@ -676,7 +713,7 @@ export default function CardDetail({
                       disabled={loading}
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                         subtask.status === "DONE"
-                          ? "bg-green-500 border-green-500"
+                          ? "bg-(--theme-success) border-(--theme-success)"
                           : "border-gray-300"
                       }`}
                     >
@@ -704,7 +741,7 @@ export default function CardDetail({
                         size="sm"
                         onClick={() => handleDeleteSubtask(subtask.id)}
                         disabled={loading}
-                        className="text-red-500 hover:text-red-700"
+                        className="text-(--theme-danger) hover:text-(--theme-danger-dark)"
                       >
                         <FaTrash className="text-xs" />
                       </Button>
@@ -756,7 +793,7 @@ export default function CardDetail({
                   {card.comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="border-l-2 border-blue-500 pl-4"
+                      className="border-l-2 border-(--theme-primary) pl-4"
                     >
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm">
@@ -811,17 +848,17 @@ export default function CardDetail({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                  <div className="text-3xl font-bold text-(--theme-primary) mb-2">
                     {formatDuration(totalTime)}
                   </div>
                   <p className="text-sm text-gray-500">
                     {activeTimer ? "Running..." : "Total Time Logged"}
                   </p>
                   {activeTimer && (
-                    <div className="mt-2 flex items-center justify-center gap-2 text-green-600">
+                    <div className="mt-2 flex items-center justify-center gap-2 text-(--theme-success)">
                       <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-(--theme-success) opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-(--theme-success)"></span>
                       </span>
                       <span className="text-sm font-medium">Timer Active</span>
                     </div>
@@ -833,8 +870,8 @@ export default function CardDetail({
                   disabled={loading}
                   className={`w-full ${
                     activeTimer
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-green-500 hover:bg-green-600"
+                      ? "bg-(--theme-danger) hover:bg-(--theme-danger-dark)"
+                      : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
                   }`}
                 >
                   {activeTimer ? (
@@ -862,7 +899,7 @@ export default function CardDetail({
                         <div className="flex justify-between mb-1">
                           <span className="font-medium">{log.user.name}</span>
                           {log.durationMinutes && (
-                            <span className="text-blue-600 font-semibold">
+                            <span className="text-(--theme-primary) font-semibold">
                               {formatDuration(log.durationMinutes)}
                             </span>
                           )}
@@ -870,7 +907,7 @@ export default function CardDetail({
                         <div className="text-gray-500">
                           {new Date(log.startTime).toLocaleString()}
                           {log.endTime === null && (
-                            <span className="text-green-600 ml-2">
+                            <span className="text-(--theme-success) ml-2">
                               ● Active
                             </span>
                           )}
@@ -897,7 +934,7 @@ export default function CardDetail({
                   {/* Complete Card Button (for assigned member) */}
                   {isAssignedMember && card.status === "IN_PROGRESS" && (
                     <Button
-                      className="w-full justify-start bg-purple-500 hover:bg-purple-600 text-white"
+                      className="w-full justify-start bg-(--theme-secondary) hover:bg-(--theme-secondary-dark) text-white"
                       onClick={handleCompleteCard}
                       disabled={loading}
                     >
@@ -918,7 +955,7 @@ export default function CardDetail({
                       </Button>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-red-600 hover:text-red-700"
+                        className="w-full justify-start text-(--theme-danger) hover:text-(--theme-danger-dark)"
                         onClick={() => setDeleteDialogOpen(true)}
                       >
                         <FaTrash className="mr-2" />
@@ -944,7 +981,7 @@ export default function CardDetail({
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  Title <span className="text-red-500">*</span>
+                  Title <span className="text-(--theme-danger)">*</span>
                 </label>
                 <Input
                   value={editForm.title}
@@ -1017,6 +1054,22 @@ export default function CardDetail({
                     setEditForm({ ...editForm, dueDate: e.target.value })
                   }
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Deadline (with Time)
+                </label>
+                <Input
+                  type="datetime-local"
+                  value={editForm.deadline}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, deadline: e.target.value })
+                  }
+                />
+                <p className="text-xs text-gray-500">
+                  Set a deadline with time to get notifications when approaching
+                </p>
               </div>
             </div>
             <DialogFooter>

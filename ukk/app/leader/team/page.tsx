@@ -84,7 +84,7 @@ export default async function TeamPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <TeamManagement projects={projects} />
     </div>
   );

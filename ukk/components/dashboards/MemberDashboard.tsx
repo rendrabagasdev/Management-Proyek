@@ -50,43 +50,43 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
       title: "Active Tasks",
       value: activeCards.length,
       icon: FaTasks,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-(--theme-primary)",
+      bgColor: "bg-(--theme-primary)/10",
     },
     {
       title: "To Do",
       value: todoCards.length,
       icon: FaClock,
-      color: "text-orange-600",
-      bgColor: "bg-orange-100",
+      color: "text-(--theme-accent)",
+      bgColor: "bg-(--theme-accent)/10",
     },
     {
       title: "Completed",
       value: completedCards.length,
       icon: FaComments,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-(--theme-success)",
+      bgColor: "bg-(--theme-success)/10",
     },
   ];
 
   const statusColors: Record<string, string> = {
-    TODO: "bg-gray-100 text-gray-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    REVIEW: "bg-purple-100 text-purple-800",
-    DONE: "bg-green-100 text-green-800",
+    TODO: "bg-muted text-muted-foreground",
+    IN_PROGRESS: "bg-(--theme-primary)/10 text-(--theme-primary)",
+    REVIEW: "bg-(--theme-secondary)/10 text-(--theme-secondary)",
+    DONE: "bg-(--theme-success)/10 text-(--theme-success)",
   };
 
   const priorityColors: Record<string, string> = {
-    LOW: "border-blue-300",
-    MEDIUM: "border-yellow-300",
-    HIGH: "border-red-300",
+    LOW: "border-(--theme-primary) border-opacity-40",
+    MEDIUM: "border-(--theme-warning) border-opacity-40",
+    HIGH: "border-(--theme-danger) border-opacity-40",
   };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">My Dashboard</h1>
-        <p className="text-gray-500">Track your tasks and progress</p>
+        <p className="text-muted-foreground">Track your tasks and progress</p>
       </div>
 
       {/* Stats */}
@@ -96,7 +96,7 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
           return (
             <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
                   {stat.title}
                 </CardTitle>
                 <div className={`p-2 rounded-lg ${stat.bgColor}`}>
@@ -121,10 +121,10 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
           <div className="space-y-2">
             {user.projectMembers.map((pm: ProjectMemberWithProject) => (
               <Link key={pm.id} href={`/projects/${pm.project.id}`}>
-                <div className="p-3 border rounded-lg hover:bg-gray-50 transition cursor-pointer flex justify-between items-center">
+                <div className="p-3 border rounded-lg hover:bg-muted/50 transition cursor-pointer flex justify-between items-center">
                   <div>
                     <h3 className="font-semibold">{pm.project.name}</h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       {pm.project.boards.reduce(
                         (sum: number, b: BoardWithCards) =>
                           sum + b.cards.length,

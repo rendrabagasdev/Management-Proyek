@@ -3,6 +3,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { triggerProjectEvent, triggerCardEvent } from "@/lib/pusher";
+import {
+  notifyCardAssigned,
+  notifyCardUpdated,
+  notifyCardCompleted,
+} from "@/lib/notifications";
 
 // GET /api/cards/:id - Get card by ID
 export async function GET(
@@ -227,6 +232,73 @@ export async function PATCH(
       userId: parseInt(session.user.id),
       timestamp: new Date().toISOString(),
     });
+
+    // 🔔 Send notifications
+    const currentUserId = parseInt(session.user.id);
+    const currentUserName = session.user.name || "Someone";
+
+    // Notify on assignment change
+    if (assigneeId !== undefined && updatedCard.assigneeId) {
+      const previousCard = await prisma.card.findUnique({
+        where: { id: cardId },
+        select: { assigneeId: true },
+      });
+
+      // Only notify if assignee actually changed
+      if (
+        previousCard &&
+        previousCard.assigneeId !== updatedCard.assigneeId &&
+        updatedCard.assigneeId !== currentUserId
+      ) {
+        await notifyCardAssigned(
+          updatedCard.assigneeId,
+          cardId,
+          updatedCard.title,
+          currentUserName
+        );
+      }
+    }
+
+    // Notify on status change to DONE
+    if (status === "DONE") {
+      // Get all project members to notify
+      const projectMembers = await prisma.projectMember.findMany({
+        where: {
+          projectId: updatedCard.board.projectId,
+          userId: { not: currentUserId }, // Don't notify the person who completed it
+        },
+        select: { userId: true },
+      });
+
+      const memberIds = projectMembers.map((m) => m.userId);
+      if (memberIds.length > 0) {
+        await notifyCardCompleted(
+          memberIds,
+          cardId,
+          updatedCard.title,
+          currentUserName
+        );
+      }
+    }
+
+    // Notify assignee on other important changes
+    if (
+      updatedCard.assigneeId &&
+      updatedCard.assigneeId !== currentUserId &&
+      (body.priority || body.dueDate)
+    ) {
+      const changes = [];
+      if (body.priority) changes.push(`priority changed to ${body.priority}`);
+      if (body.dueDate) changes.push("due date updated");
+
+      await notifyCardUpdated(
+        updatedCard.assigneeId,
+        cardId,
+        updatedCard.title,
+        currentUserName,
+        changes.join(", ")
+      );
+    }
 
     return NextResponse.json(updatedCard);
   } catch (error) {

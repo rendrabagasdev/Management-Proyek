@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'dart:convert';
 import '../providers/card_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/card_detail_model.dart';
 import '../models/card_model.dart' as CardModel;
 import '../services/pusher_service.dart';
@@ -72,7 +73,7 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   void _onCardUpdated(Map<String, dynamic> data) {
     final userId = data['userId'];
     // Refresh card data
-    ref.refresh(cardDetailProvider(widget.cardId));
+    ref.invalidate(cardDetailProvider(widget.cardId));
 
     // Show notification if update from another user
     if (userId != null && mounted) {
@@ -86,7 +87,7 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   }
 
   void _onCardAssigned(Map<String, dynamic> data) {
-    ref.refresh(cardDetailProvider(widget.cardId));
+    ref.invalidate(cardDetailProvider(widget.cardId));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -98,7 +99,7 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   }
 
   void _onCommentCreated(Map<String, dynamic> data) {
-    ref.refresh(cardDetailProvider(widget.cardId));
+    ref.invalidate(cardDetailProvider(widget.cardId));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -110,11 +111,55 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   }
 
   void _onSubtaskChanged(Map<String, dynamic> data) {
-    ref.refresh(cardDetailProvider(widget.cardId));
+    ref.invalidate(cardDetailProvider(widget.cardId));
   }
 
   void _onTimeLogChanged(Map<String, dynamic> data) {
-    ref.refresh(cardDetailProvider(widget.cardId));
+    ref.invalidate(cardDetailProvider(widget.cardId));
+  }
+
+  Future<void> _handleCompleteCard() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Selesaikan Card'),
+        content: const Text(
+          'Apakah Anda yakin ingin menyelesaikan card ini? Card akan dipindahkan ke status REVIEW.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.amber[700]),
+            child: const Text('Selesaikan'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final operations = ref.read(cardOperationsProvider);
+        await operations.updateCardStatus(widget.cardId, 'REVIEW', ref);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Card berhasil dipindahkan ke REVIEW'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
   }
 
   @override
@@ -267,6 +312,19 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   }
 
   Widget _buildCardHeader(CardDetail card) {
+    // Get current user from auth provider
+    final authState = ref.watch(authProvider);
+    final userId = authState.user?.id;
+
+    // Check if current user is the assignee
+    final isAssignee = card.assignee != null && card.assignee!.id == userId;
+
+    // Show complete button if user is assignee and card is not in REVIEW or DONE
+    final canComplete =
+        isAssignee &&
+        card.status != CardModel.Status.REVIEW &&
+        card.status != CardModel.Status.DONE;
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -307,6 +365,26 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
                     style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
                 ],
+              ),
+            ],
+            // Complete Card Button
+            if (canComplete) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _handleCompleteCard,
+                  icon: const Icon(Icons.check_circle_outline),
+                  label: const Text('Selesaikan Card'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber[700],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
               ),
             ],
           ],

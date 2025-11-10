@@ -123,6 +123,7 @@ export async function PATCH(
       data: {
         name: body.name,
         description: body.description,
+        deadline: body.deadline ? new Date(body.deadline) : null,
       },
       include: {
         creator: {

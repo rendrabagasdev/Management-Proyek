@@ -7,7 +7,7 @@ class ApiService {
   bool _isInitialized = false;
 
   // Backend URL - Use localhost for web, 10.0.2.2 for Android emulator
-  static const String _baseUrl = 'http://localhost:3000/api/mobile';
+  static const String _baseUrl = 'http://127.0.2.2:3000/api/mobile';
   static const String _tokenKey = 'auth_token';
 
   ApiService() {
@@ -251,6 +251,62 @@ class ApiService {
   Future<void> clearToken() async {
     await initialize();
     await _prefs!.remove(_tokenKey);
+  }
+
+  // ==================
+  // NOTIFICATIONS
+  // ==================
+
+  Future<Map<String, dynamic>> getNotifications({
+    bool unreadOnly = false,
+  }) async {
+    await initialize();
+    try {
+      final url = unreadOnly
+          ? '/notifications?unreadOnly=true'
+          : '/notifications';
+      final response = await _dio.get(url);
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<Map<String, dynamic>> getUnreadCount() async {
+    await initialize();
+    try {
+      final response = await _dio.get('/notifications/unread-count');
+      return response.data;
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> markNotificationsAsRead({
+    List<int>? notificationIds,
+    bool markAllAsRead = false,
+  }) async {
+    await initialize();
+    try {
+      await _dio.patch(
+        '/notifications',
+        data: {
+          if (notificationIds != null) 'notificationIds': notificationIds,
+          if (markAllAsRead) 'markAllAsRead': true,
+        },
+      );
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
+  Future<void> deleteNotification(int notificationId) async {
+    await initialize();
+    try {
+      await _dio.delete('/notifications?id=$notificationId');
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
   }
 
   String _handleError(DioException e) {

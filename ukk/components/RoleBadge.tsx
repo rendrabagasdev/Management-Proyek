@@ -23,34 +23,38 @@ export function RoleBadge({
     ADMIN: {
       label: "Admin",
       icon: FaUserShield,
-      className: "bg-red-100 text-red-800 border-red-200 hover:bg-red-200",
+      className:
+        "bg-(--theme-danger) bg-opacity-10 text-(--theme-danger) border-(--theme-danger) border-opacity-30 hover:bg-(--theme-danger) hover:bg-opacity-20",
     },
     LEADER: {
       label: "Leader",
       icon: FaUserTie,
-      className: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-200",
+      className:
+        "bg-(--theme-primary) bg-opacity-10 text-(--theme-primary) border-(--theme-primary) border-opacity-30 hover:bg-(--theme-primary) hover:bg-opacity-20",
     },
     DEVELOPER: {
       label: "Developer",
       icon: FaCode,
       className:
-        "bg-green-100 text-green-800 border-green-200 hover:bg-green-200",
+        "bg-(--theme-success) bg-opacity-10 text-(--theme-success) border-(--theme-success) border-opacity-30 hover:bg-(--theme-success) hover:bg-opacity-20",
     },
     DESIGNER: {
       label: "Designer",
       icon: FaPalette,
-      className: "bg-pink-100 text-pink-800 border-pink-200 hover:bg-pink-200",
+      className:
+        "bg-(--theme-accent) bg-opacity-10 text-(--theme-accent) border-(--theme-accent) border-opacity-30 hover:bg-(--theme-accent) hover:bg-opacity-20",
     },
     OBSERVER: {
       label: "Observer",
       icon: FaEye,
-      className: "bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200",
+      className:
+        "bg-muted text-muted-foreground border-border hover:bg-muted/80",
     },
     MEMBER: {
       label: "Member",
       icon: FaUserTie,
       className:
-        "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-200",
+        "bg-(--theme-secondary) bg-opacity-10 text-(--theme-secondary) border-(--theme-secondary) border-opacity-30 hover:bg-(--theme-secondary) hover:bg-opacity-20",
     },
   };
 

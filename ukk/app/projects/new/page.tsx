@@ -39,6 +39,7 @@ export default function NewProjectPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    deadline: "",
   });
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -281,13 +282,13 @@ export default function NewProjectPage() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "LEADER":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-(--theme-secondary) bg-opacity-10 text-(--theme-secondary)";
       case "DEVELOPER":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-(--theme-primary) bg-opacity-10 text-(--theme-primary)";
       case "DESIGNER":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300";
+        return "bg-(--theme-accent) bg-opacity-10 text-(--theme-accent)";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -313,14 +314,14 @@ export default function NewProjectPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+              <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger)er-opacity-30 text-text-(--theme-danger) py-3 rounded">
                 {error}
               </div>
             )}
 
             <div className="space-y-2">
               <label htmlFor="name" className="text-sm font-medium">
-                Project Name <span className="text-red-500">*</span>
+                Project Name <span className="text-(--theme-danger)">*</span>
               </label>
               <Input
                 id="name"
@@ -354,6 +355,25 @@ export default function NewProjectPage() {
               </p>
             </div>
 
+            <div className="space-y-2">
+              <label htmlFor="deadline" className="text-sm font-medium">
+                Project Deadline
+              </label>
+              <Input
+                id="deadline"
+                type="datetime-local"
+                value={formData.deadline}
+                onChange={(e) =>
+                  setFormData({ ...formData, deadline: e.target.value })
+                }
+                disabled={loading}
+              />
+              <p className="text-xs text-gray-500">
+                Optional: Set a deadline to track project completion and get
+                notifications
+              </p>
+            </div>
+
             {/* Team Members Section */}
             <div className="space-y-4 border-t pt-6">
               <div>
@@ -376,7 +396,7 @@ export default function NewProjectPage() {
                   <>
                     {users.find((u) => u.id === parseInt(selectedUserId))
                       ?.globalRole !== "LEADER" && (
-                      <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm flex items-center gap-2">
+                      <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) px-3 py-2 rounded text-sm flex items-center gap-2">
                         <span>❌</span>
                         <span>
                           This user does not have LEADER global role. Only users
@@ -387,7 +407,7 @@ export default function NewProjectPage() {
                     )}
                     {users.find((u) => u.id === parseInt(selectedUserId))
                       ?.isLeaderElsewhere && (
-                      <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-sm flex items-center gap-2">
+                      <div className="bg-(--theme-warning) bg-opacity-10 border border-(--theme-warning)er-opacity-30 text-(--theme-warning) py-2 rounded text-sm flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
                           This user is already a LEADER in another project. They
@@ -550,11 +570,11 @@ export default function NewProjectPage() {
               )}
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-              <h4 className="font-medium text-blue-900 mb-2">
+            <div className="bg-(--theme-info) bg-opacity-10 border border-(--theme-info) border-opacity-30 p-4 rounded">
+              <h4 className="font-medium text-(--theme-info) mb-2">
                 What happens next?
               </h4>
-              <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+              <ul className="text-sm text-(--theme-info) space-y-1 list-disc list-inside">
                 <li>Selected team members will be added to the project</li>
                 <li>
                   4 default boards will be created (To Do, In Progress, Review,

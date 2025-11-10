@@ -169,7 +169,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
-            <FaUsers className="text-blue-600" />
+            <FaUsers className="text-(--theme-primary)" />
             Team Management
           </h1>
           <p className="text-gray-500 mt-1">
@@ -204,7 +204,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Team Members
             </CardTitle>
-            <FaUsers className="text-blue-600" />
+            <FaUsers className="text-(--theme-primary)" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{teamStats.length}</div>
@@ -216,7 +216,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Active Projects
             </CardTitle>
-            <FaProjectDiagram className="text-purple-600" />
+            <FaProjectDiagram className="text-(--theme-secondary)" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{projects.length}</div>
@@ -228,7 +228,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Total Tasks
             </CardTitle>
-            <FaTasks className="text-green-600" />
+            <FaTasks className="text-(--theme-success)" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -242,7 +242,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <CardTitle className="text-sm font-medium text-gray-600">
               Time Tracked
             </CardTitle>
-            <FaClock className="text-orange-600" />
+            <FaClock className="text-(--theme-accent)" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -267,7 +267,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FaStar className="text-yellow-500" />
+                <FaStar className="text-(--theme-warning)" />
                 Top Performers
               </CardTitle>
             </CardHeader>
@@ -288,7 +288,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold text-green-600">
+                      <p className="text-2xl font-bold text-(--theme-success)">
                         {member.completionRate.toFixed(0)}%
                       </p>
                       <p className="text-xs text-gray-500">
@@ -345,7 +345,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                       </div>
                       <div>
                         <p className="text-xs text-gray-500">Completed</p>
-                        <p className="text-lg font-semibold text-green-600">
+                        <p className="text-lg font-semibold text-(--theme-success)">
                           {member.completedCards}
                         </p>
                       </div>
@@ -367,12 +367,12 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                       member.highPriorityPending > 0) && (
                       <div className="flex gap-2 pt-2 border-t">
                         {member.overdueTasks > 0 && (
-                          <Badge className="bg-red-100 text-red-800">
+                          <Badge className="bg-(--theme-danger-light)/10 text-(--theme-danger-dark)">
                             {member.overdueTasks} overdue
                           </Badge>
                         )}
                         {member.highPriorityPending > 0 && (
-                          <Badge className="bg-orange-100 text-orange-800">
+                          <Badge className="bg-(--theme-accent-light)/10 text-(--theme-accent-dark)">
                             {member.highPriorityPending} high priority
                           </Badge>
                         )}
@@ -394,7 +394,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FaClock className="text-purple-600" />
+                  <FaClock className="text-(--theme-secondary)" />
                   Time Tracking Leaders
                 </CardTitle>
               </CardHeader>
@@ -416,7 +416,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                             {member.user.name}
                           </span>
                         </div>
-                        <span className="font-semibold text-purple-600">
+                        <span className="font-semibold text-(--theme-secondary)">
                           {formatDuration(member.totalTime)}
                         </span>
                       </div>
@@ -429,7 +429,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FaComment className="text-blue-600" />
+                  <FaComment className="text-(--theme-primary)" />
                   Most Active Contributors
                 </CardTitle>
               </CardHeader>
@@ -502,7 +502,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                               {member.assignedCards} tasks
                             </span>
                             {member.overdueTasks > 0 && (
-                              <Badge className="bg-red-100 text-red-800 text-xs">
+                              <Badge className="bg-(--theme-danger-light)/10 text-(--theme-danger-dark) text-xs">
                                 {member.overdueTasks} overdue
                               </Badge>
                             )}
@@ -529,7 +529,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                           {member.highPriorityPending > 0 && (
                             <>
                               <span>•</span>
-                              <span className="text-orange-600">
+                              <span className="text-(--theme-accent)">
                                 {member.highPriorityPending} high priority
                               </span>
                             </>

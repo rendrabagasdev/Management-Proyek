@@ -43,8 +43,8 @@ export function NotificationProvider({
             key={t.id}
             className={`p-4 rounded-lg shadow-lg animate-in slide-in-from-bottom-5 ${
               t.variant === "destructive"
-                ? "bg-red-600 text-white"
-                : "bg-white border"
+                ? "bg-(--theme-danger) text-white"
+                : "bg-card border"
             }`}
           >
             <div className="font-semibold">{t.title}</div>

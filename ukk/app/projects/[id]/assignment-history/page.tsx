@@ -53,7 +53,7 @@ export default async function AssignmentHistoryPage({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <AssignmentHistory projectId={projectId} />
       </div>

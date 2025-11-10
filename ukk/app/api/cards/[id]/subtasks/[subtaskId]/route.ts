@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { triggerCardEvent } from "@/lib/pusher";
+import { notifySubtaskCompleted } from "@/lib/notifications";
 
 // Update subtask
 export async function PATCH(
@@ -47,9 +48,17 @@ export async function PATCH(
     const userId = parseInt(session.user.id);
     const project = subtask.card.board.project;
     const isCreator = project.createdBy === userId;
-    const isMember = project.members.some((m) => m.userId === userId);
+    const userMembership = project.members.find((m) => m.userId === userId);
+    const isAssignee = subtask.card.assigneeId === userId;
 
-    if (!isCreator && !isMember && session.user.role !== "ADMIN") {
+    // Member yang assigned atau LEADER bisa update subtask
+    const canUpdate =
+      isCreator ||
+      userMembership?.projectRole === "LEADER" ||
+      isAssignee ||
+      session.user.role === "ADMIN";
+
+    if (!canUpdate) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -65,6 +74,23 @@ export async function PATCH(
       userId: parseInt(session.user.id),
       timestamp: new Date().toISOString(),
     });
+
+    // 🔔 Notify on subtask completion
+    if (status === "DONE" && subtask.status !== "DONE") {
+      const currentUserName = session.user.name || "Someone";
+      const cardAssigneeId = subtask.card.assigneeId;
+
+      // Notify card assignee if different from current user
+      if (cardAssigneeId && cardAssigneeId !== userId) {
+        await notifySubtaskCompleted(
+          cardAssigneeId,
+          cardId,
+          subtask.card.title,
+          subtask.title,
+          currentUserName
+        );
+      }
+    }
 
     return NextResponse.json(updatedSubtask);
   } catch (error) {
@@ -119,11 +145,13 @@ export async function DELETE(
     const project = subtask.card.board.project;
     const isCreator = project.createdBy === userId;
     const userMembership = project.members.find((m) => m.userId === userId);
+    const isAssignee = subtask.card.assigneeId === userId;
 
-    // Only LEADER can delete
+    // LEADER, Assignee, atau ADMIN bisa delete subtask
     const canDelete =
       isCreator ||
       userMembership?.projectRole === "LEADER" ||
+      isAssignee ||
       session.user.role === "ADMIN";
 
     if (!canDelete) {

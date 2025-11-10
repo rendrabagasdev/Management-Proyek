@@ -160,14 +160,14 @@ export default function AssignmentHistory({
     switch (status) {
       case "active":
         return (
-          <Badge className="bg-blue-100 text-blue-800">
+          <Badge className="bg-(--theme-primary-light) text-(--theme-primary-dark)">
             <FaSpinner className="mr-1" />
             Active
           </Badge>
         );
       case "completed":
         return (
-          <Badge className="bg-green-100 text-green-800">
+          <Badge className="bg-(--theme-success-light) text-(--theme-success-dark)">
             <FaCheckCircle className="mr-1" />
             Completed
           </Badge>
@@ -186,9 +186,9 @@ export default function AssignmentHistory({
 
   const getPriorityBadge = (priority: string) => {
     const colors = {
-      HIGH: "bg-red-100 text-red-800",
-      MEDIUM: "bg-yellow-100 text-yellow-800",
-      LOW: "bg-blue-100 text-blue-800",
+      HIGH: "bg-(--theme-danger-light) text-(--theme-danger-dark)",
+      MEDIUM: "bg-(--theme-accent-light) text-(--theme-accent-dark)",
+      LOW: "bg-(--theme-primary-light) text-(--theme-primary-dark)",
     };
     return (
       <Badge className={colors[priority as keyof typeof colors] || ""}>
@@ -208,7 +208,7 @@ export default function AssignmentHistory({
       <Card>
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
-            <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
+            <FaSpinner className="animate-spin text-4xl text-(--theme-primary) mx-auto mb-4" />
             <p className="text-gray-500">Loading assignment history...</p>
           </div>
         </CardContent>
@@ -220,7 +220,7 @@ export default function AssignmentHistory({
     return (
       <Card>
         <CardContent className="py-12">
-          <div className="text-center text-red-600">
+          <div className="text-center text-(--theme-danger)">
             <p>{error}</p>
             <Button onClick={fetchAssignmentHistory} className="mt-4">
               Try Again
@@ -237,7 +237,7 @@ export default function AssignmentHistory({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
-            <FaHistory className="text-blue-600" />
+            <FaHistory className="text-(--theme-primary)" />
             Assignment History
           </h2>
           <p className="text-gray-500 mt-1">
@@ -267,7 +267,7 @@ export default function AssignmentHistory({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-(--theme-primary)">
                 {summary.active}
               </div>
             </CardContent>
@@ -280,7 +280,7 @@ export default function AssignmentHistory({
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-(--theme-success)">
                 {summary.completed}
               </div>
             </CardContent>

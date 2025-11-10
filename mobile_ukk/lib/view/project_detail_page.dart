@@ -9,26 +9,26 @@ class ProjectDetailPage extends ConsumerWidget {
   Color _getStatusColor(CardModel.Status status) {
     switch (status) {
       case CardModel.Status.TODO:
-        return Colors.grey;
+        return const Color(0xFF6B7280); // Gray
       case CardModel.Status.IN_PROGRESS:
-        return Colors.blue;
+        return const Color(0xFF3B82F6); // Blue
       case CardModel.Status.REVIEW:
-        return Colors.purple;
+        return const Color(0xFF8B5CF6); // Purple
       case CardModel.Status.DONE:
-        return Colors.green;
+        return const Color(0xFF10B981); // Green
     }
   }
 
   Color _getPriorityColor(CardModel.Priority priority) {
     switch (priority) {
       case CardModel.Priority.LOW:
-        return Colors.blue;
+        return const Color(0xFF06B6D4); // Cyan
       case CardModel.Priority.MEDIUM:
-        return Colors.orange;
+        return const Color(0xFFF59E0B); // Amber
       case CardModel.Priority.HIGH:
-        return Colors.red;
+        return const Color(0xFFEF4444); // Red
       case CardModel.Priority.URGENT:
-        return Colors.deepOrange;
+        return const Color(0xFFDC2626); // Dark Red
     }
   }
 
@@ -88,8 +88,23 @@ class ProjectDetailPage extends ConsumerWidget {
                 children: [
                   // Project Info Card
                   Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.white, Colors.grey.shade50],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -97,37 +112,43 @@ class ProjectDetailPage extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
-                            vertical: 6,
+                            vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.amber[50],
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.amber.shade100,
+                                Colors.amber.shade50,
+                              ],
+                            ),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.amber[300]!,
-                              width: 1,
+                              color: Colors.amber.shade300,
+                              width: 1.5,
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.person,
-                                size: 16,
-                                color: Colors.amber[700],
+                                Icons.person_pin,
+                                size: 18,
+                                color: Colors.amber.shade800,
                               ),
-                              const SizedBox(width: 6),
+                              const SizedBox(width: 8),
                               Text(
-                                'Showing only my assigned tasks',
+                                'My Assigned Tasks',
                                 style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.amber[900],
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.amber.shade900,
+                                  letterSpacing: 0.2,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
                         if (project.description != null &&
                             project.description!.isNotEmpty) ...[
                           Text(
@@ -135,20 +156,23 @@ class ProjectDetailPage extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[700],
+                              height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                         ],
                         Row(
                           children: [
                             _InfoChip(
-                              icon: Icons.people,
+                              icon: Icons.people_rounded,
                               label: '${project.members.length} members',
+                              color: Colors.blue,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 12),
                             _InfoChip(
-                              icon: Icons.assignment_ind,
-                              label: '${allCards.length} my tasks',
+                              icon: Icons.assignment_rounded,
+                              label: '${allCards.length} tasks',
+                              color: Colors.green,
                             ),
                           ],
                         ),
@@ -156,7 +180,7 @@ class ProjectDetailPage extends ConsumerWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
 
                   // Kanban Board
                   SizedBox(
@@ -240,23 +264,36 @@ class ProjectDetailPage extends ConsumerWidget {
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color color;
 
-  const _InfoChip({required this.icon, required this.label});
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: Colors.grey[700]),
-          const SizedBox(width: 4),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+          ),
         ],
       ),
     );
@@ -283,50 +320,69 @@ class _BoardColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 280,
-      margin: const EdgeInsets.only(right: 12),
+      width: 300,
+      margin: const EdgeInsets.only(right: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Column Header
+          // Column Header with gradient
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+              gradient: LinearGradient(
+                colors: [color, color.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              border: Border.all(color: color.withOpacity(0.3)),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
               children: [
-                Icon(icon, size: 18, color: color),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, size: 20, color: Colors.white),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
+                    horizontal: 10,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.2),
+                    color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     cards.length.toString(),
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: const TextStyle(
+                      fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: color,
+                      color: Colors.white,
                     ),
                   ),
                 ),
@@ -334,32 +390,44 @@ class _BoardColumn extends StatelessWidget {
             ),
           ),
 
-          // Cards List
+          // Cards List with better styling
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.grey.shade50,
                 borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
+                  bottomLeft: Radius.circular(16),
+                  bottomRight: Radius.circular(16),
                 ),
-                border: Border.all(color: Colors.grey[300]!),
+                border: Border.all(color: color.withOpacity(0.2), width: 2),
               ),
               child: cards.isEmpty
                   ? Center(
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          'No tasks',
-                          style: TextStyle(
-                            color: Colors.grey[400],
-                            fontSize: 14,
-                          ),
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.inbox_outlined,
+                              size: 48,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No tasks yet',
+                              style: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(12),
                       itemCount: cards.length,
                       itemBuilder: (context, index) {
                         final card = cards[index];
@@ -385,87 +453,186 @@ class _CardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final priorityColor = getPriorityColor(card.priority);
+
     return GestureDetector(
       onTap: () {
         Navigator.pushNamed(context, '/card-detail', arguments: card.id);
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: getPriorityColor(card.priority).withOpacity(0.3),
-            width: 2,
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: priorityColor.withOpacity(0.3), width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
+              color: priorityColor.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Title and Priority
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    card.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+            // Priority bar at top
+            Container(
+              height: 4,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [priorityColor, priorityColor.withOpacity(0.6)],
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: getPriorityColor(card.priority).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    card.priority.name,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                      color: getPriorityColor(card.priority),
-                    ),
-                  ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
                 ),
-              ],
+              ),
             ),
 
-            // Due Date
-            if (card.dueDate != null) ...[
-              const SizedBox(height: 8),
-              Row(
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    _formatDate(card.dueDate!),
-                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                  // Title and Priority Badge
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          card.title,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1F2937),
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: priorityColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: priorityColor.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          card.priority.name,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: priorityColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Bottom info row
+                  Row(
+                    children: [
+                      // Due Date
+                      if (card.dueDate != null) ...[
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _isOverdue(card.dueDate!)
+                                  ? Colors.red.shade50
+                                  : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.access_time_rounded,
+                                  size: 14,
+                                  color: _isOverdue(card.dueDate!)
+                                      ? Colors.red.shade700
+                                      : Colors.blue.shade700,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    _formatDate(card.dueDate!),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: _isOverdue(card.dueDate!)
+                                          ? Colors.red.shade700
+                                          : Colors.blue.shade700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        // Show creator avatar if no due date
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.purple.shade400,
+                                Colors.purple.shade600,
+                              ],
+                            ),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.purple.withOpacity(0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              card.creator.name.substring(0, 1).toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ],
         ),
       ),
     );
+  }
+
+  bool _isOverdue(DateTime date) {
+    return date.isBefore(DateTime.now());
   }
 
   String _formatDate(DateTime date) {
@@ -477,9 +644,11 @@ class _CardTile extends StatelessWidget {
     } else if (diff.inDays == 1) {
       return 'Tomorrow';
     } else if (diff.inDays < 0) {
-      return 'Overdue';
+      return 'Overdue!';
+    } else if (diff.inDays < 7) {
+      return '${diff.inDays}d left';
     } else {
-      return '${diff.inDays} days left';
+      return '${(diff.inDays / 7).floor()}w left';
     }
   }
 }

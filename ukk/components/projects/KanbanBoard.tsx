@@ -73,9 +73,9 @@ const priorityColors: Record<Priority, string> = {
 };
 
 const priorityBadgeColors: Record<Priority, string> = {
-  LOW: "bg-blue-100 text-blue-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  HIGH: "bg-red-100 text-red-800",
+  LOW: "bg-(--theme-primary-light) text-(--theme-primary-dark)",
+  MEDIUM: "bg-(--theme-accent-light) text-(--theme-accent-dark)",
+  HIGH: "bg-(--theme-danger-light) text-(--theme-danger-dark)",
 };
 
 export default function KanbanBoard({
@@ -324,20 +324,25 @@ export default function KanbanBoard({
   const doneCards = filteredCards.filter((card) => card.status === "DONE");
 
   const columns = [
-    { title: "To Do", status: "TODO", cards: todoCards, color: "bg-gray-100" },
+    { title: "To Do", status: "TODO", cards: todoCards, color: "bg-muted/50" },
     {
       title: "In Progress",
       status: "IN_PROGRESS",
       cards: inProgressCards,
-      color: "bg-blue-50",
+      color: "bg-(--theme-primary-light)/20",
     },
     {
       title: "Review",
       status: "REVIEW",
       cards: reviewCards,
-      color: "bg-purple-50",
+      color: "bg-(--theme-secondary-light)/20",
     },
-    { title: "Done", status: "DONE", cards: doneCards, color: "bg-green-50" },
+    {
+      title: "Done",
+      status: "DONE",
+      cards: doneCards,
+      color: "bg-(--theme-success-light)/20",
+    },
   ];
 
   return (
@@ -356,28 +361,29 @@ export default function KanbanBoard({
               </CardHeader>
               <CardContent className="space-y-3">
                 {column.cards.map((card) => {
-                  const completedSubtasks = card.subtasks.filter(
-                    (st) => st.status === "DONE"
-                  ).length;
-                  const totalSubtasks = card.subtasks.length;
-                  const totalTime = card.timeLogs.reduce(
-                    (sum, log) => sum + (log.durationMinutes || 0),
-                    0
-                  );
+                  const completedSubtasks =
+                    card.subtasks?.filter((st) => st.status === "DONE")
+                      .length || 0;
+                  const totalSubtasks = card.subtasks?.length || 0;
+                  const totalTime =
+                    card.timeLogs?.reduce(
+                      (sum, log) => sum + (log.durationMinutes || 0),
+                      0
+                    ) || 0;
 
                   return (
                     <Card
                       key={card.id}
                       className={`border-l-4 ${
                         priorityColors[card.priority]
-                      } hover:shadow-md transition-shadow bg-white ${
+                      } hover:shadow-md transition-shadow bg-card ${
                         movingCardId === card.id ? "opacity-50" : ""
                       }`}
                     >
                       <CardContent className="p-4 space-y-2">
                         <div className="flex justify-between items-start gap-2">
                           <Link href={`/cards/${card.id}`} className="flex-1">
-                            <h3 className="font-semibold text-sm line-clamp-2 hover:text-blue-600">
+                            <h3 className="font-semibold text-sm line-clamp-2 hover:text-(--theme-primary)">
                               {card.title}
                             </h3>
                           </Link>
@@ -391,7 +397,7 @@ export default function KanbanBoard({
                         </div>
 
                         {card.description && (
-                          <p className="text-xs text-gray-600 line-clamp-2">
+                          <p className="text-xs text-muted-foreground line-clamp-2">
                             {card.description}
                           </p>
                         )}
@@ -463,7 +469,7 @@ export default function KanbanBoard({
                         )}
 
                         {/* Card metadata */}
-                        <div className="flex items-center gap-3 text-xs text-gray-500 pt-2">
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-2">
                           {totalSubtasks > 0 && (
                             <div className="flex items-center gap-1">
                               <FaCheckCircle className="w-3 h-3" />
@@ -472,10 +478,10 @@ export default function KanbanBoard({
                               </span>
                             </div>
                           )}
-                          {card.comments.length > 0 && (
+                          {(card.comments?.length || 0) > 0 && (
                             <div className="flex items-center gap-1">
                               <FaComment className="w-3 h-3" />
-                              <span>{card.comments.length}</span>
+                              <span>{card.comments?.length || 0}</span>
                             </div>
                           )}
                           {totalTime > 0 && (
@@ -486,10 +492,10 @@ export default function KanbanBoard({
                           )}
                         </div>
 
-                        <div className="text-xs text-gray-400 pt-1 border-t flex justify-between items-center">
+                        <div className="text-xs text-muted-foreground/70 pt-1 border-t flex justify-between items-center">
                           <span>by {card.creator.name}</span>
                           {card.assigneeId && (
-                            <span className="text-blue-600 font-medium">
+                            <span className="text-(--theme-primary) font-medium">
                               →{" "}
                               {project.members.find(
                                 (m) => m.userId === card.assigneeId
@@ -517,7 +523,7 @@ export default function KanbanBoard({
                 )}
 
                 {column.cards.length === 0 && !canCreateCard && (
-                  <p className="text-center text-gray-400 text-sm py-8">
+                  <p className="text-center text-muted-foreground text-sm py-8">
                     No cards yet
                   </p>
                 )}

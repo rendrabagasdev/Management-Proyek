@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtractMobileJwtFromRequest } from "@/lib/auth-mobile";
 import { Status } from "@prisma/client";
+import { triggerCardEvent } from "@/lib/pusher";
 
 // CORS headers
 const corsHeaders = {
@@ -112,6 +113,13 @@ export async function PATCH(
           },
         },
       },
+    });
+
+    // 🔴 Trigger realtime event
+    await triggerCardEvent(cardId.toString(), "subtask:updated", {
+      subtask: updatedSubtask,
+      userId,
+      timestamp: new Date().toISOString(),
     });
 
     return NextResponse.json(

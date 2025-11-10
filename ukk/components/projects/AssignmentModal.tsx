@@ -44,7 +44,10 @@ export default function AssignmentModal({
       : type === "error"
       ? XCircle
       : AlertCircle;
-  const iconColor = type === "success" ? "text-green-600" : "text-red-600";
+  const iconColor =
+    type === "success"
+      ? "text-(--theme-success)"
+      : "text-(--theme-danger)";
   const defaultTitle = type === "success" ? "Success" : "Assignment Failed";
 
   const getStatusColor = (status: string) => {
@@ -52,11 +55,11 @@ export default function AssignmentModal({
       case "TODO":
         return "bg-gray-100 text-gray-800";
       case "IN_PROGRESS":
-        return "bg-blue-100 text-blue-800";
+        return "bg-(--theme-primary-light) text-(--theme-primary-dark)";
       case "REVIEW":
-        return "bg-purple-100 text-purple-800";
+        return "bg-(--theme-secondary-light)/10 text-(--theme-secondary-dark)";
       case "DONE":
-        return "bg-green-100 text-green-800";
+        return "bg-(--theme-success-light) text-(--theme-success-dark)";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -69,7 +72,9 @@ export default function AssignmentModal({
           <div className="flex items-center gap-3">
             <div
               className={`rounded-full p-2 ${
-                type === "success" ? "bg-green-50" : "bg-red-50"
+                type === "success"
+                  ? "bg-(--theme-success-light)"
+                  : "bg-(--theme-danger-light)"
               }`}
             >
               <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${iconColor}`} />
@@ -84,8 +89,8 @@ export default function AssignmentModal({
 
           {/* Show unfinished cards if available */}
           {error?.unfinishedCards && error.unfinishedCards.length > 0 && (
-            <div className="mt-3 sm:mt-4 rounded-lg border bg-amber-50 p-3 sm:p-4">
-              <p className="mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-amber-900">
+            <div className="mt-3 sm:mt-4 rounded-lg border bg-(--theme-warning-light)/10 p-3 sm:p-4">
+              <p className="mb-2 sm:mb-3 text-xs sm:text-sm font-semibold text-(--theme-warning-dark)">
                 User currently has {error.unfinishedCards.length} unfinished
                 task(s):
               </p>
@@ -114,7 +119,7 @@ export default function AssignmentModal({
                   </div>
                 ))}
               </div>
-              <p className="mt-2 sm:mt-3 text-[10px] sm:text-xs text-amber-800">
+              <p className="mt-2 sm:mt-3 text-[10px] sm:text-xs text-(--theme-warning-dark)">
                 💡 Please wait for the user to complete their current tasks
                 before assigning new ones.
               </p>
@@ -126,8 +131,8 @@ export default function AssignmentModal({
             onClick={onClose}
             className={`w-full sm:w-auto ${
               type === "success"
-                ? "bg-green-600 hover:bg-green-700"
-                : "bg-red-600 hover:bg-red-700"
+                ? "bg-(--theme-success) hover:bg-(--theme-success-dark)"
+                : "bg-(--theme-danger) hover:bg-(--theme-danger-dark)"
             }`}
           >
             {type === "success" ? "Great!" : "Got it"}

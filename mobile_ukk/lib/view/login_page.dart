@@ -107,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'to GLIMMR',
+                    'to Management Projects',
                     style: TextStyle(
                       fontSize: 26,
                       color: Colors.black87,

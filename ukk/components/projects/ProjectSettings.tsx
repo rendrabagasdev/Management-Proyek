@@ -50,6 +50,7 @@ interface Project {
   id: number;
   name: string;
   description: string | null;
+  deadline: Date | null;
   createdBy: number;
   isCompleted: boolean;
   completedAt: Date | null;
@@ -86,6 +87,11 @@ export default function ProjectSettings({
   const [projectDescription, setProjectDescription] = useState(
     project.description || ""
   );
+  const [projectDeadline, setProjectDeadline] = useState(
+    project.deadline
+      ? new Date(project.deadline).toISOString().slice(0, 16)
+      : ""
+  );
 
   // Add member state
   const [showAddMember, setShowAddMember] = useState(false);
@@ -104,15 +110,15 @@ export default function ProjectSettings({
   const getRoleColor = (role: string) => {
     switch (role) {
       case "LEADER":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-(--theme-secondary)/10 text-(--theme-secondary)";
       case "DEVELOPER":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-(--theme-primary)/10 text-(--theme-primary)";
       case "DESIGNER":
-        return "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-300";
+        return "bg-(--theme-accent)/10 text-(--theme-accent)";
       case "OBSERVER":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+        return "bg-muted text-muted-foreground";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -130,6 +136,7 @@ export default function ProjectSettings({
         body: JSON.stringify({
           name: projectName,
           description: projectDescription,
+          deadline: projectDeadline || null,
         }),
       });
 
@@ -355,12 +362,12 @@ export default function ProjectSettings({
 
         {/* Alerts */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-(--theme-danger)/10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) px-4 py-3 rounded">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+          <div className="bg-(--theme-success)/10 border border-(--theme-success) border-opacity-30 text-(--theme-success) px-4 py-3 rounded">
             {success}
           </div>
         )}
@@ -376,7 +383,8 @@ export default function ProjectSettings({
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="projectName" className="text-sm font-medium">
-                Project Name <span className="text-red-500">*</span>
+                Project Name{" "}
+                <span className="text-(--theme-danger)">*</span>
               </label>
               <Input
                 id="projectName"
@@ -400,6 +408,23 @@ export default function ProjectSettings({
                 rows={4}
                 disabled={loading}
               />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="projectDeadline" className="text-sm font-medium">
+                Project Deadline
+              </label>
+              <Input
+                id="projectDeadline"
+                type="datetime-local"
+                value={projectDeadline}
+                onChange={(e) => setProjectDeadline(e.target.value)}
+                disabled={loading}
+              />
+              <p className="text-xs text-muted-foreground">
+                Optional: Set a deadline to track project completion and get
+                notifications
+              </p>
             </div>
 
             <Button
@@ -496,7 +521,7 @@ export default function ProjectSettings({
                           }
                           disabled={loading}
                         >
-                          <FaTimes className="h-4 w-4 text-red-500" />
+                          <FaTimes className="h-4 w-4 text-(--theme-danger)" />
                         </Button>
                       )}
                   </div>
@@ -510,13 +535,17 @@ export default function ProjectSettings({
         {(isCreator || isAdmin) && (
           <Card
             className={
-              project.isCompleted ? "border-blue-200" : "border-green-200"
+              project.isCompleted
+                ? "border-(--theme-primary-light)"
+                : "border-(--theme-success-light)"
             }
           >
             <CardHeader>
               <CardTitle
                 className={
-                  project.isCompleted ? "text-blue-600" : "text-green-600"
+                  project.isCompleted
+                    ? "text-(--theme-primary)"
+                    : "text-(--theme-success)"
                 }
               >
                 Project Status
@@ -529,14 +558,16 @@ export default function ProjectSettings({
               <div
                 className={`flex items-center justify-between p-4 border rounded-lg ${
                   project.isCompleted
-                    ? "border-blue-200 bg-blue-50"
-                    : "border-green-200 bg-green-50"
+                    ? "border-(--theme-primary-light) bg-(--theme-primary-light)"
+                    : "border-(--theme-success-light) bg-(--theme-success-light)"
                 }`}
               >
                 <div>
                   <h4
                     className={`font-semibold ${
-                      project.isCompleted ? "text-blue-900" : "text-green-900"
+                      project.isCompleted
+                        ? "text-(--theme-primary-dark)"
+                        : "text-(--theme-success-dark)"
                     }`}
                   >
                     {project.isCompleted
@@ -545,7 +576,9 @@ export default function ProjectSettings({
                   </h4>
                   <p
                     className={`text-sm ${
-                      project.isCompleted ? "text-blue-700" : "text-green-700"
+                      project.isCompleted
+                        ? "text-(--theme-primary-dark)"
+                        : "text-(--theme-success-dark)"
                     }`}
                   >
                     {project.isCompleted
@@ -563,8 +596,8 @@ export default function ProjectSettings({
                   disabled={loading}
                   className={
                     project.isCompleted
-                      ? "bg-blue-100 hover:bg-blue-200"
-                      : "bg-green-600 hover:bg-green-700"
+                      ? "bg-(--theme-primary-light) hover:bg-(--theme-primary-light)"
+                      : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
                   }
                 >
                   {project.isCompleted ? "Reopen Project" : "Mark as Completed"}
@@ -576,20 +609,22 @@ export default function ProjectSettings({
 
         {/* Danger Zone */}
         {(isCreator || isAdmin) && (
-          <Card className="border-red-200">
+          <Card className="border-(--theme-danger-light)">
             <CardHeader>
-              <CardTitle className="text-red-600">Danger Zone</CardTitle>
+              <CardTitle className="text-(--theme-danger)">
+                Danger Zone
+              </CardTitle>
               <CardDescription>
                 Irreversible actions that will affect this project
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between p-4 border border-red-200 rounded-lg bg-red-50">
+              <div className="flex items-center justify-between p-4 border border-(--theme-danger-light) rounded-lg bg-(--theme-danger-light)">
                 <div>
-                  <h4 className="font-semibold text-red-900">
+                  <h4 className="font-semibold text-(--theme-danger-dark)">
                     Delete this project
                   </h4>
-                  <p className="text-sm text-red-700">
+                  <p className="text-sm text-(--theme-danger-dark)">
                     Once deleted, all data including {totalTasks} tasks will be
                     lost permanently.
                   </p>
@@ -670,12 +705,12 @@ export default function ProjectSettings({
               <>
                 {availableUsers.find((u) => u.id === parseInt(selectedUserId))
                   ?.globalRole !== "LEADER" && (
-                  <div className="bg-red-50 border border-red-200 text-red-800 px-3 py-2 rounded text-sm">
+                  <div className="bg-(--theme-danger-light) border border-(--theme-danger-light) text-(--theme-danger-dark) px-3 py-2 rounded text-sm">
                     ❌ This user does not have LEADER global role
                   </div>
                 )}
                 {currentLeader && (
-                  <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-sm">
+                  <div className="bg-(--theme-accent-light) border border-(--theme-accent-light) text-(--theme-accent-dark) px-3 py-2 rounded text-sm">
                     ⚠️ Project already has a LEADER
                   </div>
                 )}
@@ -707,7 +742,9 @@ export default function ProjectSettings({
           <DialogHeader>
             <DialogTitle
               className={
-                project.isCompleted ? "text-blue-600" : "text-green-600"
+                project.isCompleted
+                  ? "text-(--theme-primary)"
+                  : "text-(--theme-success)"
               }
             >
               {project.isCompleted
@@ -725,8 +762,8 @@ export default function ProjectSettings({
             <div
               className={`border p-4 rounded text-sm ${
                 project.isCompleted
-                  ? "bg-blue-50 border-blue-200 text-blue-800"
-                  : "bg-green-50 border-green-200 text-green-800"
+                  ? "bg-(--theme-primary-light) border-(--theme-primary-light) text-(--theme-primary-dark)"
+                  : "bg-(--theme-success-light) border-(--theme-success-light) text-(--theme-success-dark)"
               }`}
             >
               <p className="font-semibold mb-2">
@@ -763,8 +800,8 @@ export default function ProjectSettings({
               disabled={loading}
               className={
                 project.isCompleted
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "bg-green-600 hover:bg-green-700"
+                  ? "bg-(--theme-primary) hover:bg-(--theme-primary-dark)"
+                  : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
               }
             >
               {loading
@@ -781,7 +818,7 @@ export default function ProjectSettings({
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-red-600 flex items-center gap-2">
+            <DialogTitle className="text-(--theme-danger) flex items-center gap-2">
               <FaExclamationTriangle />
               Delete Project
             </DialogTitle>
@@ -792,7 +829,7 @@ export default function ProjectSettings({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="bg-red-50 border border-red-200 p-4 rounded text-sm text-red-800">
+            <div className="bg-(--theme-danger-light) border border-(--theme-danger-light) p-4 rounded text-sm text-(--theme-danger-dark)">
               <p className="font-semibold mb-2">This will delete:</p>
               <ul className="list-disc list-inside space-y-1">
                 <li>{project.members.length} team member assignments</li>

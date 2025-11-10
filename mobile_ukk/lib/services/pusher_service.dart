@@ -8,6 +8,9 @@ class PusherService {
   late PusherChannelsFlutter pusher;
   bool _initialized = false;
 
+  // Event handlers for channels
+  final Map<String, Map<String, Function(dynamic)>> _eventHandlers = {};
+
   // Pusher credentials (sama dengan web)
   static const String _appKey = 'c3a163cfc028456c9ef8';
   static const String _cluster = 'ap1';
@@ -65,9 +68,32 @@ class PusherService {
   Future<void> unsubscribeFromChannel(String channelName) async {
     try {
       await pusher.unsubscribe(channelName: channelName);
+      // Clean up event handlers for this channel
+      _eventHandlers.remove(channelName);
       print('Unsubscribed from channel: $channelName');
     } catch (e) {
       print('Error unsubscribing from channel $channelName: $e');
+    }
+  }
+
+  // Bind custom event handler
+  void bindEvent(
+    String channelName,
+    String eventName,
+    Function(dynamic) handler,
+  ) {
+    if (!_eventHandlers.containsKey(channelName)) {
+      _eventHandlers[channelName] = {};
+    }
+    _eventHandlers[channelName]![eventName] = handler;
+    print('Event handler bound: $eventName on $channelName');
+  }
+
+  // Unbind event handler
+  void unbindEvent(String channelName, String eventName) {
+    if (_eventHandlers.containsKey(channelName)) {
+      _eventHandlers[channelName]!.remove(eventName);
+      print('Event handler unbound: $eventName on $channelName');
     }
   }
 
@@ -82,6 +108,21 @@ class PusherService {
 
   void onEvent(PusherEvent event) {
     print('Pusher event received: ${event.eventName} on ${event.channelName}');
+
+    // Call custom event handlers if registered
+    final channelName = event.channelName;
+    final eventName = event.eventName;
+
+    if (_eventHandlers.containsKey(channelName) &&
+        _eventHandlers[channelName]!.containsKey(eventName)) {
+      try {
+        _eventHandlers[channelName]![eventName]!(event.data);
+      } catch (e) {
+        print(
+          'Error executing event handler for $eventName on $channelName: $e',
+        );
+      }
+    }
   }
 
   void onSubscriptionSucceeded(String channelName, dynamic data) {

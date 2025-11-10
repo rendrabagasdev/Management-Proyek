@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ import {
   FaTasks,
   FaComments,
   FaSearch,
+  FaPlus,
 } from "react-icons/fa";
 
 interface ProjectMember {
@@ -67,14 +69,23 @@ export default function UserManagement({ users }: UserManagementProps) {
     "ADMIN" | "LEADER" | "MEMBER"
   >("MEMBER");
 
+  // Add user dialog
+  const [addUserOpen, setAddUserOpen] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    password: "",
+    globalRole: "MEMBER" as "ADMIN" | "LEADER" | "MEMBER",
+  });
+
   const getRoleColor = (role: string) => {
     switch (role) {
       case "ADMIN":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
+        return "bg-(--theme-danger-light) text-(--theme-danger-dark)";
       case "LEADER":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-(--theme-secondary-light) text-(--theme-secondary-dark)";
       case "MEMBER":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-(--theme-primary-light) text-(--theme-primary-dark)";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -117,6 +128,65 @@ export default function UserManagement({ users }: UserManagementProps) {
     }
   };
 
+  const handleAddUser = async () => {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    // Validate inputs
+    if (!newUser.name || !newUser.email || !newUser.password) {
+      setError("All fields are required");
+      setLoading(false);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      setError("Invalid email format");
+      setLoading(false);
+      return;
+    }
+
+    // Validate password length
+    if (newUser.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to create user");
+      }
+
+      setSuccess(`User ${newUser.name} created successfully`);
+      setAddUserOpen(false);
+      setNewUser({
+        name: "",
+        email: "",
+        password: "",
+        globalRole: "MEMBER",
+      });
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter users based on search
   const filteredUsers = users.filter(
     (user) =>
@@ -137,12 +207,12 @@ export default function UserManagement({ users }: UserManagementProps) {
     <div className="space-y-6">
       {/* Alerts */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div className="bg-(--theme-danger-light) border border-(--theme-danger-light) text-(--theme-danger-dark) px-4 py-3 rounded">
           {error}
         </div>
       )}
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+        <div className="bg-(--theme-success-light) border border-(--theme-success-light) text-(--theme-success-dark) px-4 py-3 rounded">
           {success}
         </div>
       )}
@@ -158,7 +228,7 @@ export default function UserManagement({ users }: UserManagementProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Admins</CardDescription>
-            <CardTitle className="text-3xl text-red-600">
+            <CardTitle className="text-3xl text-(--theme-danger)">
               {stats.admins}
             </CardTitle>
           </CardHeader>
@@ -166,7 +236,7 @@ export default function UserManagement({ users }: UserManagementProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Leaders</CardDescription>
-            <CardTitle className="text-3xl text-purple-600">
+            <CardTitle className="text-3xl text-(--theme-secondary)">
               {stats.leaders}
             </CardTitle>
           </CardHeader>
@@ -174,7 +244,7 @@ export default function UserManagement({ users }: UserManagementProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardDescription>Members</CardDescription>
-            <CardTitle className="text-3xl text-blue-600">
+            <CardTitle className="text-3xl text-(--theme-primary)">
               {stats.members}
             </CardTitle>
           </CardHeader>
@@ -184,10 +254,18 @@ export default function UserManagement({ users }: UserManagementProps) {
       {/* Search */}
       <Card>
         <CardHeader>
-          <CardTitle>All Users</CardTitle>
-          <CardDescription>
-            Manage user roles and view their activity
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>All Users</CardTitle>
+              <CardDescription>
+                Manage user roles and view their activity
+              </CardDescription>
+            </div>
+            <Button onClick={() => setAddUserOpen(true)} disabled={loading}>
+              <FaPlus className="mr-2" />
+              Add User
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
@@ -218,7 +296,7 @@ export default function UserManagement({ users }: UserManagementProps) {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -356,7 +434,7 @@ export default function UserManagement({ users }: UserManagementProps) {
             </div>
 
             {/* Role Descriptions */}
-            <div className="bg-blue-50 border border-blue-200 p-3 rounded text-sm">
+            <div className="bg-(--theme-primary-light)/10 border border-(--theme-primary-light) p-3 rounded text-sm">
               <p className="font-semibold mb-2">Role Permissions:</p>
               <ul className="space-y-1 text-xs">
                 {selectedRole === "ADMIN" && (
@@ -389,7 +467,7 @@ export default function UserManagement({ users }: UserManagementProps) {
               editingUser.projectMembers.some(
                 (pm) => pm.projectRole === "LEADER"
               ) && (
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-3 py-2 rounded text-sm">
+                <div className="bg-(--theme-warning-light)/10 border border-(--theme-warning-light) text-(--theme-warning-dark) px-3 py-2 rounded text-sm">
                   ⚠️ Warning: This user is currently leading a project. Changing
                   to MEMBER will prevent them from being a project leader.
                 </div>
@@ -409,6 +487,132 @@ export default function UserManagement({ users }: UserManagementProps) {
               disabled={loading || selectedRole === editingUser?.globalRole}
             >
               {loading ? "Updating..." : "Update Role"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add User Dialog */}
+      <Dialog open={addUserOpen} onOpenChange={setAddUserOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Create a new user account for the system
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name *</Label>
+              <Input
+                id="name"
+                placeholder="John Doe"
+                value={newUser.name}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, name: e.target.value })
+                }
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@example.com"
+                value={newUser.email}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, email: e.target.value })
+                }
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Min. 6 characters"
+                value={newUser.password}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, password: e.target.value })
+                }
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">Role *</Label>
+              <select
+                id="role"
+                value={newUser.globalRole}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    globalRole: e.target.value as "ADMIN" | "LEADER" | "MEMBER",
+                  })
+                }
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                disabled={loading}
+              >
+                <option value="MEMBER">Member</option>
+                <option value="LEADER">Leader</option>
+                <option value="ADMIN">Admin</option>
+              </select>
+            </div>
+
+            {/* Role Info */}
+            <div className="bg-(--theme-primary-light)pacity-10 border border-(--theme-primary-light) p-3 rounded text-sm">
+              <p className="font-semibold mb-2">
+                {newUser.globalRole} Permissions:
+              </p>
+              <ul className="space-y-1 text-xs">
+                {newUser.globalRole === "ADMIN" && (
+                  <>
+                    <li>• Full system access</li>
+                    <li>• Manage all projects and users</li>
+                    <li>• Delete any project or content</li>
+                  </>
+                )}
+                {newUser.globalRole === "LEADER" && (
+                  <>
+                    <li>• Can create projects</li>
+                    <li>• Can be assigned as project LEADER</li>
+                    <li>• Manage project settings (when assigned as leader)</li>
+                  </>
+                )}
+                {newUser.globalRole === "MEMBER" && (
+                  <>
+                    <li>• Cannot create projects</li>
+                    <li>• Cannot be assigned as project LEADER</li>
+                    <li>• Can work on tasks in assigned projects</li>
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAddUserOpen(false);
+                setNewUser({
+                  name: "",
+                  email: "",
+                  password: "",
+                  globalRole: "MEMBER",
+                });
+              }}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleAddUser} disabled={loading}>
+              {loading ? "Creating..." : "Create User"}
             </Button>
           </DialogFooter>
         </DialogContent>

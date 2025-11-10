@@ -3,6 +3,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { triggerCardEvent } from "@/lib/pusher";
+import {
+  notifyCommentAdded,
+  notifyMentionInComment,
+} from "@/lib/notifications";
 
 // POST /api/cards/:id/comments - Add comment to card
 export async function POST(
@@ -45,6 +49,84 @@ export async function POST(
       userId,
       timestamp: new Date().toISOString(),
     });
+
+    // 🔔 Send notifications
+    const currentUserName = session.user.name || "Someone";
+
+    // Get card with assignee info
+    const card = await prisma.card.findUnique({
+      where: { id: cardId },
+      select: {
+        title: true,
+        assigneeId: true,
+        createdBy: true,
+      },
+    });
+
+    if (card) {
+      // Notify card assignee (if not the commenter)
+      if (card.assigneeId && card.assigneeId !== userId) {
+        await notifyCommentAdded(
+          card.assigneeId,
+          cardId,
+          card.title,
+          currentUserName
+        );
+      }
+
+      // Notify card creator (if different from assignee and commenter)
+      if (card.createdBy !== userId && card.createdBy !== card.assigneeId) {
+        await notifyCommentAdded(
+          card.createdBy,
+          cardId,
+          card.title,
+          currentUserName
+        );
+      }
+
+      // Detect mentions (@username) in comment text
+      const mentionRegex = /@(\w+)/g;
+      const mentions = body.text.match(mentionRegex);
+
+      if (mentions) {
+        // Get all project members to find mentioned users
+        const projectMembers = await prisma.projectMember.findMany({
+          where: {
+            project: {
+              boards: {
+                some: {
+                  cards: {
+                    some: { id: cardId },
+                  },
+                },
+              },
+            },
+          },
+          include: {
+            user: { select: { id: true, name: true } },
+          },
+        });
+
+        // Notify mentioned users
+        for (const mention of mentions) {
+          const username = mention.slice(1); // Remove @
+          const mentionedUser = projectMembers.find(
+            (pm) =>
+              pm.user.name.toLowerCase() === username.toLowerCase() &&
+              pm.userId !== userId
+          );
+
+          if (mentionedUser) {
+            await notifyMentionInComment(
+              mentionedUser.userId,
+              cardId,
+              card.title,
+              currentUserName
+            );
+          }
+        }
+      }
+    }
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {

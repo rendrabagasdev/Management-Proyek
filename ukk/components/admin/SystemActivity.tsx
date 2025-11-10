@@ -134,31 +134,31 @@ export function SystemActivity() {
               FaUsers,
               "Active Users",
               stats.activity.last24Hours.activeUsers,
-              "bg-blue-100 text-blue-600"
+              "bg-(--theme-primary)/10 text-(--theme-primary)"
             )}
             {renderActivityCard(
               FaUsers,
               "New Users",
               stats.activity.last24Hours.newUsers,
-              "bg-green-100 text-green-600"
+              "bg-(--theme-success)/10 text-(--theme-success)"
             )}
             {renderActivityCard(
               FaProjectDiagram,
               "New Projects",
               stats.activity.last24Hours.newProjects,
-              "bg-purple-100 text-purple-600"
+              "bg-(--theme-secondary)/10 text-(--theme-secondary)"
             )}
             {renderActivityCard(
               FaTasks,
               "New Tasks",
               stats.activity.last24Hours.newCards,
-              "bg-orange-100 text-orange-600"
+              "bg-(--theme-accent)/10 text-(--theme-accent)"
             )}
             {renderActivityCard(
               FaComments,
               "New Comments",
               stats.activity.last24Hours.newComments,
-              "bg-pink-100 text-pink-600"
+              "bg-(--theme-info)/10 text-(--theme-info)"
             )}
           </TabsContent>
 
@@ -167,31 +167,31 @@ export function SystemActivity() {
               FaUsers,
               "Active Users",
               stats.activity.last7Days.activeUsers,
-              "bg-blue-100 text-blue-600"
+              "bg-(--theme-primary)/10 text-(--theme-primary)"
             )}
             {renderActivityCard(
               FaUsers,
               "New Users",
               stats.activity.last7Days.newUsers,
-              "bg-green-100 text-green-600"
+              "bg-(--theme-success)/10 text-(--theme-success)"
             )}
             {renderActivityCard(
               FaProjectDiagram,
               "New Projects",
               stats.activity.last7Days.newProjects,
-              "bg-purple-100 text-purple-600"
+              "bg-(--theme-secondary)/10 text-(--theme-secondary)"
             )}
             {renderActivityCard(
               FaTasks,
               "New Tasks",
               stats.activity.last7Days.newCards,
-              "bg-orange-100 text-orange-600"
+              "bg-(--theme-accent)/10 text-(--theme-accent)"
             )}
             {renderActivityCard(
               FaComments,
               "New Comments",
               stats.activity.last7Days.newComments,
-              "bg-pink-100 text-pink-600"
+              "bg-(--theme-info)/10 text-(--theme-info)"
             )}
           </TabsContent>
 
@@ -200,31 +200,31 @@ export function SystemActivity() {
               FaUsers,
               "Active Users",
               stats.activity.last30Days.activeUsers,
-              "bg-blue-100 text-blue-600"
+              "bg-(--theme-primary)/10 text-(--theme-primary)"
             )}
             {renderActivityCard(
               FaUsers,
               "New Users",
               stats.activity.last30Days.newUsers,
-              "bg-green-100 text-green-600"
+              "bg-(--theme-success)/10 text-(--theme-success)"
             )}
             {renderActivityCard(
               FaProjectDiagram,
               "New Projects",
               stats.activity.last30Days.newProjects,
-              "bg-purple-100 text-purple-600"
+              "bg-(--theme-secondary)/10 text-(--theme-secondary)"
             )}
             {renderActivityCard(
               FaTasks,
               "New Tasks",
               stats.activity.last30Days.newCards,
-              "bg-orange-100 text-orange-600"
+              "bg-(--theme-accent)/10 text-(--theme-accent)"
             )}
             {renderActivityCard(
               FaComments,
               "New Comments",
               stats.activity.last30Days.newComments,
-              "bg-pink-100 text-pink-600"
+              "bg-(--theme-info)/10 text-(--theme-info)"
             )}
           </TabsContent>
         </Tabs>

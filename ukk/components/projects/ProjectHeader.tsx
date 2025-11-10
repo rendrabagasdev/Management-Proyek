@@ -49,7 +49,7 @@ export default function ProjectHeader({
   const canManage = isCreator || isAdmin || userRole === "LEADER";
 
   return (
-    <div className="bg-white border-b">
+    <div className="bg-card border-b">
       <div className="container mx-auto p-6">
         <div className="mb-4">
           <Button variant="outline" asChild size="sm">
@@ -67,20 +67,22 @@ export default function ProjectHeader({
               {project.isCompleted && (
                 <Badge
                   variant="outline"
-                  className="bg-blue-100 text-blue-800 border-blue-300"
+                  className="bg-(--theme-primary)/10 text-(--theme-primary-dark) border-(--theme-primary)"
                 >
                   ✓ Completed
                 </Badge>
               )}
-              {isCreator && <Badge className="bg-blue-500">Owner</Badge>}
+              {isCreator && (
+                <Badge className="bg-(--theme-primary)">Owner</Badge>
+              )}
               {!isCreator && userRole && (
                 <Badge variant="outline">{userRole}</Badge>
               )}
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-muted-foreground mb-4">
               {project.description || "No description provided"}
             </p>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <FaUsers />
                 <span>{project.members.length} team members</span>
@@ -90,7 +92,7 @@ export default function ProjectHeader({
               {project.isCompleted && project.completedAt && (
                 <>
                   <span>•</span>
-                  <span className="text-blue-600">
+                  <span className="text-(--theme-primary)">
                     Completed on{" "}
                     {new Date(project.completedAt).toLocaleDateString()}
                   </span>

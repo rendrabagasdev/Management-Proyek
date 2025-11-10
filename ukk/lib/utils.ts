@@ -52,13 +52,13 @@ export function formatRelativeTime(date: Date | string): string {
 export function getRoleColor(role: string): string {
   switch (role) {
     case "ADMIN":
-      return "bg-red-500";
+      return "bg-(--theme-danger)";
     case "LEADER":
-      return "bg-blue-500";
+      return "bg-(--theme-primary)";
     case "DEVELOPER":
-      return "bg-green-500";
+      return "bg-(--theme-success)";
     case "DESIGNER":
-      return "bg-purple-500";
+      return "bg-(--theme-secondary)";
     default:
       return "bg-gray-500";
   }
@@ -68,11 +68,11 @@ export function getRoleColor(role: string): string {
 export function getPriorityColor(priority: string): string {
   switch (priority) {
     case "HIGH":
-      return "border-red-500";
+      return "border-(--theme-danger)";
     case "MEDIUM":
-      return "border-yellow-500";
+      return "border-(--theme-warning)";
     case "LOW":
-      return "border-blue-500";
+      return "border-(--theme-primary)";
     default:
       return "border-gray-500";
   }
@@ -84,11 +84,11 @@ export function getStatusColor(status: string): string {
     case "TODO":
       return "bg-gray-500";
     case "IN_PROGRESS":
-      return "bg-blue-500";
+      return "bg-(--theme-primary)";
     case "REVIEW":
-      return "bg-yellow-500";
+      return "bg-(--theme-warning)";
     case "DONE":
-      return "bg-green-500";
+      return "bg-(--theme-success)";
     default:
       return "bg-gray-500";
   }

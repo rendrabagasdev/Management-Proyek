@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { ProjectRole } from "@prisma/client";
+import { notifyProjectInvite } from "@/lib/notifications";
 
 // POST /api/projects/[id]/members - Add member to project
 export async function POST(
@@ -140,6 +141,22 @@ export async function POST(
         },
       },
     });
+
+    // 🔔 Notify new member about project invitation
+    const projectDetails = await prisma.project.findUnique({
+      where: { id: projectId },
+      select: { name: true },
+    });
+
+    if (projectDetails) {
+      const inviterName = session.user.name || "Someone";
+      await notifyProjectInvite(
+        newUserId,
+        projectId,
+        projectDetails.name,
+        inviterName
+      );
+    }
 
     return NextResponse.json(member, { status: 201 });
   } catch (error) {

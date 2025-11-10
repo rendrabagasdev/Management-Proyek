@@ -76,6 +76,31 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Custom Theme Colors - Can be overridden by settings */
+  --theme-primary: #3b82f6;
+  --theme-primary-light: #60a5fa;
+  --theme-primary-dark: #2563eb;
+  --theme-secondary: #8b5cf6;
+  --theme-secondary-light: #a78bfa;
+  --theme-secondary-dark: #7c3aed;
+  --theme-accent: #f59e0b;
+  --theme-accent-light: #fbbf24;
+  --theme-accent-dark: #d97706;
+
+  /* Status Colors */
+  --theme-success: #10b981;
+  --theme-success-light: #34d399;
+  --theme-success-dark: #059669;
+  --theme-warning: #f59e0b;
+  --theme-warning-light: #fbbf24;
+  --theme-warning-dark: #d97706;
+  --theme-danger: #ef4444;
+  --theme-danger-light: #f87171;
+  --theme-danger-dark: #dc2626;
+  --theme-info: #3b82f6;
+  --theme-info-light: #60a5fa;
+  --theme-info-dark: #2563eb;
 }
 
 .dark {
@@ -110,6 +135,17 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Custom Theme Colors for Dark Mode */
+  --theme-primary: #60a5fa;
+  --theme-primary-light: #93c5fd;
+  --theme-primary-dark: #3b82f6;
+  --theme-secondary: #a78bfa;
+  --theme-secondary-light: #c4b5fd;
+  --theme-secondary-dark: #8b5cf6;
+  --theme-accent: #fbbf24;
+  --theme-accent-light: #fcd34d;
+  --theme-accent-dark: #f59e0b;
 }
 
 @layer base {
@@ -140,7 +176,7 @@
   input,
   select,
   textarea {
-    @apply min-h-[44px];
+    @apply min-h-11;
   }
 
   /* Prevent double-tap zoom on mobile */

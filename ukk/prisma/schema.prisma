@@ -33,6 +33,7 @@ model User {
   assignedSubtasks Subtask[]        @relation("SubtaskAssignee")
   assignedCards    CardAssignment[] @relation("AssignedCards")
   assignedByCards  CardAssignment[] @relation("AssignedByCards")
+  notifications    Notification[]
   accounts         Account[]
   sessions         Session[]
 
@@ -87,6 +88,7 @@ model Project {
   id          Int       @id @default(autoincrement())
   name        String
   description String?   @db.Text
+  deadline    DateTime?
   createdBy   Int
   isCompleted Boolean   @default(false)
   completedAt DateTime?
@@ -143,6 +145,7 @@ model Card {
   priority    Priority  @default(MEDIUM)
   status      Status    @default(TODO)
   dueDate     DateTime?
+  deadline    DateTime?
   createdBy   Int
   assigneeId  Int?
   approvedBy  Int?
@@ -237,6 +240,39 @@ model TimeLog {
   @@map("time_logs")
 }
 
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  type      NotificationType
+  title     String
+  message   String           @db.Text
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+// ===========================
+// APP SETTINGS
+// ===========================
+
+model AppSettings {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  category    String   @default("general") // general, appearance, branding, features
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt
+  updatedBy   Int?
+
+  @@map("app_settings")
+}
+
 // ===========================
 // ENUMS
 // ===========================
@@ -265,4 +301,17 @@ enum Status {
   IN_PROGRESS
   REVIEW
   DONE
+}
+
+enum NotificationType {
+  CARD_ASSIGNED
+  CARD_UPDATED
+  CARD_COMPLETED
+  COMMENT_ADDED
+  COMMENT_MENTION
+  SUBTASK_COMPLETED
+  PROJECT_INVITE
+  TIME_LOG_REMINDER
+  DEADLINE_APPROACHING
+  DEADLINE_OVERDUE
 }

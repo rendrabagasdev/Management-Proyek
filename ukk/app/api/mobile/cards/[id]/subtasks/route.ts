@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtractMobileJwtFromRequest } from "@/lib/auth-mobile";
+import { triggerCardEvent } from "@/lib/pusher";
 
 // CORS headers
 const corsHeaders = {
@@ -192,6 +193,13 @@ export async function POST(
           },
         },
       },
+    });
+
+    // 🔴 Trigger realtime event
+    await triggerCardEvent(cardId.toString(), "subtask:created", {
+      subtask,
+      userId,
+      timestamp: new Date().toISOString(),
     });
 
     return NextResponse.json(
