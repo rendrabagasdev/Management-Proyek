@@ -24,6 +24,22 @@ warning() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 error() { echo -e "${RED}❌ $1${NC}"; }
 info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 
+# Wait until DB is healthy (best-effort)
+wait_for_db() {
+    info "Waiting for database to be healthy..."
+    local retries=30
+    local count=0
+    while [ $count -lt $retries ]; do
+        if docker-compose -f $COMPOSE_FILE exec -T db mysqladmin ping -h "localhost" --silent 2>/dev/null; then
+            success "Database is healthy"
+            return 0
+        fi
+        sleep 2
+        count=$((count+1))
+    done
+    warning "Database health check timed out, continuing..."
+}
+
 # Check prerequisites
 check_prereqs() {
     if ! command -v docker &> /dev/null; then
@@ -106,6 +122,56 @@ cmd_build() {
         echo "  3. Coba: ./docker.sh clean && ./docker.sh build"
         exit 1
     fi
+}
+
+# Quickstart command: build (no-cache), up, wait DB, prisma generate/migrate/seed
+cmd_quickstart() {
+    show_banner
+    check_prereqs
+
+    warning "Building app image (no cache)..."
+    docker-compose -f $COMPOSE_FILE build --no-cache app || { error "Build failed"; exit 1; }
+
+    # Start stack; skip fail2ban if configs are missing
+    if [ ! -f fail2ban/config/jail.local ]; then
+        warning "Fail2ban config not found. Starting stack without fail2ban..."
+        docker-compose -f $COMPOSE_FILE up -d --scale fail2ban=0
+    else
+        docker-compose -f $COMPOSE_FILE up -d
+    fi
+
+    wait_for_db
+
+    echo ""
+    info "Generating Prisma client..."
+    docker-compose -f $COMPOSE_FILE exec -T app npx prisma generate || warning "Prisma generate skipped"
+
+    echo ""
+    info "Applying database migrations..."
+    docker-compose -f $COMPOSE_FILE exec -T app npx prisma migrate deploy || warning "Migration skipped"
+
+    echo ""
+    info "Seeding database (optional)..."
+    docker-compose -f $COMPOSE_FILE exec -T app npx prisma db seed || warning "Seeding skipped"
+
+    echo ""
+    success "Quickstart complete!"
+    echo "🌐 Access via Nginx: http://localhost"
+    echo "🧩 App logs: ./docker.sh logs app"
+    echo "🛡️  Nginx logs: ./docker.sh logs nginx"
+}
+
+# Rebuild command: clean app image cache and restart services
+cmd_rebuild() {
+    show_banner
+    check_prereqs
+
+    warning "Rebuilding app image (no cache)..."
+    docker-compose -f $COMPOSE_FILE build --no-cache app || { error "Build failed"; exit 1; }
+
+    warning "Restarting services..."
+    docker-compose -f $COMPOSE_FILE up -d
+    success "Rebuild complete!"
 }
 
 # Up command
@@ -288,6 +354,8 @@ cmd_commands() {
 📦 BUILD & DEPLOY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   ./docker.sh build              Build Docker images (interactive)
+    ./docker.sh quickstart         One-click: build+up+migrate+seed
+    ./docker.sh rebuild            Rebuild app image (no cache) and restart
   ./docker.sh up                 Start all services with security
   ./docker.sh down               Stop all services
   ./docker.sh restart            Restart all services
@@ -350,7 +418,7 @@ cmd_commands() {
 ╚═══════════════════════════════════════════════════════════════╝
 
   1️⃣  ./docker.sh build         → Build images
-  2️⃣  ./docker.sh up            → Start services
+    2️⃣  ./docker.sh quickstart    → Build+Up+Migrate+Seed
   3️⃣  http://localhost          → Access app
 
 EOF
@@ -369,6 +437,8 @@ COMMANDS:
 
 📦 Build & Deploy:
   build              Build Docker images (interactive menu)
+    quickstart         One-click: build (no-cache) + up + migrate + seed
+    rebuild            Rebuild app image (no-cache) and restart services
   up                 Start all services with security layers
   down               Stop all services
   restart            Restart all services
@@ -399,8 +469,7 @@ COMMANDS:
 EXAMPLES:
 
   # First time setup
-  ./docker.sh build
-  ./docker.sh up
+    ./docker.sh quickstart
 
   # View logs
   ./docker.sh logs
@@ -487,6 +556,12 @@ case $COMMAND in
         ;;
     seed)
         cmd_seed
+        ;;
+    quickstart)
+        cmd_quickstart
+        ;;
+    rebuild)
+        cmd_rebuild
         ;;
     banned)
         cmd_banned
