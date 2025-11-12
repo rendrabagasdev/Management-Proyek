@@ -101,10 +101,10 @@ export default function ProjectHeader({
           </Alert>
         )}
 
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{project.name}</h1>
+            <div className="flex flex-wrap items-center gap-2 lg:gap-3 mb-2">
+              <h1 className="text-2xl lg:text-3xl font-bold">{project.name}</h1>
               {project.isCompleted && (
                 <Badge
                   variant="outline"
@@ -120,19 +120,21 @@ export default function ProjectHeader({
                 <Badge variant="outline">{userRole}</Badge>
               )}
             </div>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-4 text-sm lg:text-base">
               {project.description || "No description provided"}
             </p>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs lg:text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <FaUsers />
                 <span>{project.members.length} team members</span>
               </div>
-              <span>•</span>
-              <span>Created by {project.creator.name}</span>
+              <span className="hidden sm:inline">•</span>
+              <span className="hidden sm:inline">
+                Created by {project.creator.name}
+              </span>
               {project.deadline && (
                 <>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span
                     className={
                       isOverdue ? "text-destructive font-semibold" : ""
@@ -144,7 +146,7 @@ export default function ProjectHeader({
               )}
               {project.isCompleted && project.completedAt && (
                 <>
-                  <span>•</span>
+                  <span className="hidden sm:inline">•</span>
                   <span className="text-(--theme-primary)">
                     Completed on{" "}
                     {new Date(project.completedAt).toLocaleDateString()}
@@ -155,26 +157,46 @@ export default function ProjectHeader({
           </div>
 
           {canManage && (
-            <div className="flex gap-2">
-              <Button variant="outline" asChild>
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+              <Button
+                variant="outline"
+                asChild
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Link href={`/projects/${project.id}/analytics`}>
                   <FaChartBar className="mr-2" />
                   Analytics
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button
+                variant="outline"
+                asChild
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Link href={`/projects/${project.id}/assignment-history`}>
                   <FaHistory className="mr-2" />
                   History
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button
+                variant="outline"
+                asChild
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Link href={`/projects/${project.id}/top-performers`}>
                   <FaTrophy className="mr-2" />
                   Leaderboard
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button
+                variant="outline"
+                asChild
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Link href={`/projects/${project.id}/settings`}>
                   <FaCog className="mr-2" />
                   Settings
