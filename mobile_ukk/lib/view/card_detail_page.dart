@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
-import 'dart:convert';
 import '../providers/card_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/card_detail_model.dart';
 import '../models/card_model.dart' as CardModel;
-import '../services/pusher_service.dart';
+import '../services/firebase_service.dart';
 
 class CardDetailPage extends ConsumerStatefulWidget {
   final int cardId;
@@ -20,54 +18,63 @@ class CardDetailPage extends ConsumerStatefulWidget {
 class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   final TextEditingController _commentController = TextEditingController();
   bool _isTimerRunning = false;
-  final PusherService _pusherService = PusherService();
-  String? _channelName;
+  final FirebaseService _firebaseService = FirebaseService();
+  String? _eventPath;
 
   @override
   void initState() {
     super.initState();
-    _setupPusher();
+    _setupFirebase();
   }
 
-  Future<void> _setupPusher() async {
-    await _pusherService.initialize();
-    _channelName = 'card-${widget.cardId}';
-    await _pusherService.subscribeToChannel(_channelName!);
+  Future<void> _setupFirebase() async {
+    await _firebaseService.initialize();
+    _eventPath = 'cards/${widget.cardId}/events';
 
-    // Listen to Pusher events
-    _pusherService.pusher.onEvent = _handlePusherEvent;
-  }
+    // Subscribe to card events
+    await _firebaseService.subscribeToPath(_eventPath!);
 
-  void _handlePusherEvent(PusherEvent event) {
-    if (event.channelName != _channelName) return;
-
-    try {
-      final data = jsonDecode(event.data);
-
-      // Handle different event types
-      switch (event.eventName) {
-        case 'card:updated':
-          _onCardUpdated(data);
-          break;
-        case 'card:assigned':
-          _onCardAssigned(data);
-          break;
-        case 'comment:created':
-          _onCommentCreated(data);
-          break;
-        case 'subtask:created':
-        case 'subtask:updated':
-        case 'subtask:deleted':
-          _onSubtaskChanged(data);
-          break;
-        case 'timelog:started':
-        case 'timelog:stopped':
-          _onTimeLogChanged(data);
-          break;
-      }
-    } catch (e) {
-      print('Error handling Pusher event: $e');
-    }
+    // Bind event handlers with proper wrapping
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'card:updated',
+      (data) => _onCardUpdated(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'card:assigned',
+      (data) => _onCardAssigned(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'comment:created',
+      (data) => _onCommentCreated(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'subtask:created',
+      (data) => _onSubtaskChanged(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'subtask:updated',
+      (data) => _onSubtaskChanged(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'subtask:deleted',
+      (data) => _onSubtaskChanged(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'timelog:started',
+      (data) => _onTimeLogChanged(data as Map<String, dynamic>),
+    );
+    _firebaseService.bindEvent(
+      _eventPath!,
+      'timelog:stopped',
+      (data) => _onTimeLogChanged(data as Map<String, dynamic>),
+    );
   }
 
   void _onCardUpdated(Map<String, dynamic> data) {
@@ -165,8 +172,8 @@ class _CardDetailPageState extends ConsumerState<CardDetailPage> {
   @override
   void dispose() {
     _commentController.dispose();
-    if (_channelName != null) {
-      _pusherService.unsubscribeFromChannel(_channelName!);
+    if (_eventPath != null) {
+      _firebaseService.unsubscribeFromPath(_eventPath!);
     }
     super.dispose();
   }

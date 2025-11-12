@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { triggerCardEvent } from "@/lib/pusher";
+import { triggerCardEvent } from "@/lib/firebase-triggers";
 import { notifySubtaskCompleted } from "@/lib/notifications";
 
 // Update subtask

@@ -174,7 +174,7 @@ export default function AssignmentHistory({
         );
       case "unassigned":
         return (
-          <Badge className="bg-gray-100 text-gray-800">
+          <Badge className="bg-muted text-foreground">
             <FaTimesCircle className="mr-1" />
             Unassigned
           </Badge>
@@ -209,7 +209,7 @@ export default function AssignmentHistory({
         <CardContent className="flex items-center justify-center py-12">
           <div className="text-center">
             <FaSpinner className="animate-spin text-4xl text-(--theme-primary) mx-auto mb-4" />
-            <p className="text-gray-500">Loading assignment history...</p>
+            <p className="text-muted-foreground">Loading assignment history...</p>
           </div>
         </CardContent>
       </Card>
@@ -240,7 +240,7 @@ export default function AssignmentHistory({
             <FaHistory className="text-(--theme-primary)" />
             Assignment History
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             Track all card assignments and their status
           </p>
         </div>
@@ -251,7 +251,7 @@ export default function AssignmentHistory({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-foreground/70">
                 Total Assignments
               </CardTitle>
             </CardHeader>
@@ -262,7 +262,7 @@ export default function AssignmentHistory({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-foreground/70">
                 Active
               </CardTitle>
             </CardHeader>
@@ -275,7 +275,7 @@ export default function AssignmentHistory({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-foreground/70">
                 Completed
               </CardTitle>
             </CardHeader>
@@ -288,12 +288,12 @@ export default function AssignmentHistory({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-foreground/70">
                 Unassigned
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-600">
+              <div className="text-2xl font-bold text-foreground/70">
                 {summary.unassigned}
               </div>
             </CardContent>
@@ -301,7 +301,7 @@ export default function AssignmentHistory({
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-foreground/70">
                 Avg. Duration
               </CardTitle>
             </CardHeader>
@@ -383,7 +383,7 @@ export default function AssignmentHistory({
               >
                 Clear Filters
               </Button>
-              <p className="text-sm text-gray-500 flex items-center">
+              <p className="text-sm text-muted-foreground flex items-center">
                 Showing {filteredAssignments.length} of {assignments.length}{" "}
                 assignments
               </p>
@@ -399,7 +399,7 @@ export default function AssignmentHistory({
         </CardHeader>
         <CardContent>
           {filteredAssignments.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-muted-foreground">
               <FaHistory className="text-4xl mx-auto mb-4 opacity-50" />
               <p>No assignment records found</p>
             </div>
@@ -425,7 +425,7 @@ export default function AssignmentHistory({
                         <div>
                           <p className="font-medium">{assignment.card.title}</p>
                           {assignment.reason && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-muted-foreground mt-1">
                               {assignment.reason}
                             </p>
                           )}
@@ -443,7 +443,7 @@ export default function AssignmentHistory({
                             <p className="font-medium">
                               {assignment.assignee.name}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               {assignment.projectMember.projectRole}
                             </p>
                           </div>
@@ -463,7 +463,7 @@ export default function AssignmentHistory({
                             <p className="font-medium">
                               {formatDate(assignment.assignedAt)}
                             </p>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-muted-foreground">
                               {formatTime(assignment.assignedAt)}
                             </p>
                           </div>

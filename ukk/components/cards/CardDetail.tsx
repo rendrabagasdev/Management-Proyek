@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { usePusherEvent } from "@/lib/pusher-client";
+import { useFirebaseEvent } from "@/lib/firebase-hooks";
 import { useToast } from "@/hooks/use-toast";
+import { RelativeTime } from "@/components/RelativeTime";
 import {
   Card,
   CardContent,
@@ -44,12 +45,8 @@ import {
   FaPlus,
 } from "react-icons/fa";
 import { Priority, Status, ProjectRole } from "@prisma/client";
-import { formatDuration, formatRelativeTime } from "@/lib/utils";
-import {
-  DeadlineBadge,
-  DeadlineProgress,
-  DeadlineAlert,
-} from "@/components/DeadlineBadge";
+import { formatDuration } from "@/lib/utils";
+import { DeadlineProgress, DeadlineAlert } from "@/components/DeadlineBadge";
 import AssignmentModal from "@/components/projects/AssignmentModal";
 
 interface CardDetailProps {
@@ -69,6 +66,27 @@ interface CardDetailProps {
       name: string;
       email: string;
     };
+    assignee?: {
+      id: number;
+      name: string;
+      email: string;
+    } | null;
+    assignments?: Array<{
+      id: number;
+      assignedTo: number;
+      assignedBy: number;
+      isActive: boolean;
+      assignee: {
+        id: number;
+        name: string;
+        email: string;
+      };
+      assigner: {
+        id: number;
+        name: string;
+        email: string;
+      };
+    }>;
     board: {
       id: number;
       name: string;
@@ -145,6 +163,11 @@ export default function CardDetail({
   const [subtaskTitle, setSubtaskTitle] = useState("");
   const [currentTime, setCurrentTime] = useState(0);
 
+  // Sync state when initialCard changes (e.g., after refresh)
+  useEffect(() => {
+    setCard(initialCard);
+  }, [initialCard]);
+
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -183,15 +206,17 @@ export default function CardDetail({
   });
 
   // Check if user has active timer
-  const activeTimer = card.timeLogs.find(
+  const activeTimer = card.timeLogs?.find(
     (log) => log.user.id === userId && log.endTime === null
   );
 
   // Calculate total time (completed only)
-  const completedTime = card.timeLogs.reduce(
-    (sum, log) => sum + (log.endTime ? log.durationMinutes || 0 : 0),
-    0
-  );
+  // NOTE: durationMinutes field actually stores SECONDS (misleading name from DB)
+  const completedTime = (card.timeLogs || []).reduce((sum, log) => {
+    // Skip if no endTime (timer still running) or no startTime (corrupt data)
+    if (!log.endTime || !log.startTime) return sum;
+    return sum + (log.durationMinutes || 0);
+  }, 0);
 
   // Real-time timer counter
   useEffect(() => {
@@ -214,16 +239,16 @@ export default function CardDetail({
     return () => clearInterval(interval);
   }, [activeTimer]);
 
-  // Total time = completed + current running
+  // Total time = completed + current running (both in seconds)
   const totalTime = completedTime + currentTime;
 
   // Calculate subtask progress
-  const completedSubtasks = card.subtasks.filter(
+  const completedSubtasks = (card.subtasks || []).filter(
     (st) => st.status === "DONE"
   ).length;
   const subtaskProgress =
-    card.subtasks.length > 0
-      ? (completedSubtasks / card.subtasks.length) * 100
+    (card.subtasks?.length || 0) > 0
+      ? (completedSubtasks / (card.subtasks?.length || 1)) * 100
       : 0;
 
   const canEdit = userRole === "LEADER" || isCreator;
@@ -231,88 +256,74 @@ export default function CardDetail({
   const canManageSubtasks = canEdit || isAssignedMember;
 
   // Realtime: Listen to card updated
-  usePusherEvent(`card-${card.id}`, "card:updated", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "card:updated", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { card: updatedCard, userId: eventUserId } = eventData;
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Card Updated",
         description: "This card was updated by another user",
       });
     }
-    setCard(updatedCard as typeof card);
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to card assigned
-  usePusherEvent(`card-${card.id}`, "card:assigned", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "card:assigned", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { card: updatedCard, userId: eventUserId } = eventData;
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Card Assigned",
         description: "This card was assigned to someone",
       });
     }
-    setCard(updatedCard as typeof card);
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to comment created
-  usePusherEvent(`card-${card.id}`, "comment:created", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "comment:created", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { comment: newComment, userId: eventUserId } = eventData;
-    const typedComment = newComment as (typeof card.comments)[0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "New Comment",
-        description: `${typedComment.user.name} added a comment`,
+        description: "A new comment was added",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      comments: [typedComment, ...prev.comments],
-    }));
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to subtask created
-  usePusherEvent(`card-${card.id}`, "subtask:created", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "subtask:created", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { subtask, userId: eventUserId } = eventData;
-    const typedSubtask = subtask as (typeof card.subtasks)[0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Subtask Created",
         description: "A new subtask was added",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      subtasks: [...prev.subtasks, typedSubtask],
-    }));
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to subtask updated
-  usePusherEvent(`card-${card.id}`, "subtask:updated", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "subtask:updated", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { subtask: updatedSubtask, userId: eventUserId } = eventData;
-    const typedSubtask = updatedSubtask as (typeof card.subtasks)[0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Subtask Updated",
         description: "A subtask was updated",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      subtasks: prev.subtasks.map((st) =>
-        st.id === typedSubtask.id ? typedSubtask : st
-      ),
-    }));
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to subtask deleted
-  usePusherEvent(`card-${card.id}`, "subtask:deleted", (data) => {
+  useFirebaseEvent(`cards/${card.id}/events`, "subtask:deleted", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { subtaskId, userId: eventUserId } = eventData;
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Subtask Deleted",
@@ -320,46 +331,57 @@ export default function CardDetail({
         variant: "destructive",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      subtasks: prev.subtasks.filter((st) => st.id !== subtaskId),
-    }));
+    router.refresh(); // Fetch fresh data from database
   });
 
-  // Realtime: Listen to time log started
-  usePusherEvent(`card-${card.id}`, "timelog:started", (data) => {
+  // Realtime: Listen to time log started (trigger to refresh data)
+  useFirebaseEvent(`cards/${card.id}/events`, "timelog:started", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { timeLog, userId: eventUserId } = eventData;
-    const typedTimeLog = timeLog as (typeof card.timeLogs)[0];
+    const { userId: eventUserId, timestamp } = eventData;
+
+    // Skip old events (older than 10 seconds)
+    if (timestamp) {
+      const eventTime = new Date(timestamp as string).getTime();
+      const now = Date.now();
+      const ageSeconds = (now - eventTime) / 1000;
+      if (ageSeconds > 10) return;
+    }
+
+    // Show toast notification for other users
     if (eventUserId !== userId) {
       toast({
         title: "Timer Started",
-        description: `${typedTimeLog.user.name} started working on this card`,
+        description: "Someone started working on this card",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      timeLogs: [typedTimeLog, ...prev.timeLogs],
-    }));
+
+    // Refresh data from server (real-time event as trigger only)
+    router.refresh();
   });
 
-  // Realtime: Listen to time log stopped
-  usePusherEvent(`card-${card.id}`, "timelog:stopped", (data) => {
+  // Realtime: Listen to time log stopped (trigger to refresh data)
+  useFirebaseEvent(`cards/${card.id}/events`, "timelog:stopped", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { timeLog: updatedLog, userId: eventUserId } = eventData;
-    const typedTimeLog = updatedLog as (typeof card.timeLogs)[0];
+    const { userId: eventUserId, timestamp } = eventData;
+
+    // Skip old events (older than 10 seconds)
+    if (timestamp) {
+      const eventTime = new Date(timestamp as string).getTime();
+      const now = Date.now();
+      const ageSeconds = (now - eventTime) / 1000;
+      if (ageSeconds > 10) return;
+    }
+
+    // Show toast notification for other users
     if (eventUserId !== userId) {
       toast({
         title: "Timer Stopped",
-        description: `${typedTimeLog.user.name} stopped the timer`,
+        description: "Someone stopped the timer",
       });
     }
-    setCard((prev) => ({
-      ...prev,
-      timeLogs: prev.timeLogs.map((log) =>
-        log.id === typedTimeLog.id ? typedTimeLog : log
-      ),
-    }));
+
+    // Refresh data from server (real-time event as trigger only)
+    router.refresh();
   });
 
   // Add comment
@@ -367,20 +389,32 @@ export default function CardDetail({
     if (!comment.trim()) return;
 
     setLoading(true);
+    const tempComment = comment; // Save before clearing
     try {
       const response = await fetch(`/api/cards/${card.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: comment }),
+        body: JSON.stringify({ text: tempComment }),
       });
 
       if (response.ok) {
         setComment("");
-        router.refresh();
+        setLoading(false);
+        // Firebase will handle the real-time update
+        toast({
+          title: "Success",
+          description: "Comment added successfully",
+        });
+      } else {
+        throw new Error("Failed to add comment");
       }
     } catch (error) {
       console.error("Failed to add comment:", error);
-    } finally {
+      toast({
+        title: "Error",
+        description: "Failed to add comment",
+        variant: "destructive",
+      });
       setLoading(false);
     }
   };
@@ -397,7 +431,7 @@ export default function CardDetail({
           body: JSON.stringify({ timeLogId: activeTimer.id }),
         });
       } else {
-        // Start timer: server will atomically assign the card and set status to IN_PROGRESS
+        // Start timer
         const postResp = await fetch(`/api/cards/${card.id}/time`, {
           method: "POST",
         });
@@ -413,6 +447,8 @@ export default function CardDetail({
           return;
         }
       }
+
+      // Refresh data from server (no optimistic update needed)
       router.refresh();
     } catch (error) {
       console.error("Failed to toggle timer:", error);
@@ -435,11 +471,18 @@ export default function CardDetail({
 
       if (response.ok) {
         setSubtaskTitle("");
+        setLoading(false);
         router.refresh();
+      } else {
+        throw new Error("Failed to add subtask");
       }
     } catch (error) {
       console.error("Failed to add subtask:", error);
-    } finally {
+      toast({
+        title: "Error",
+        description: "Failed to add subtask",
+        variant: "destructive",
+      });
       setLoading(false);
     }
   };
@@ -452,15 +495,28 @@ export default function CardDetail({
     setLoading(true);
     try {
       const newStatus = currentStatus === "DONE" ? "TODO" : "DONE";
-      await fetch(`/api/cards/${card.id}/subtasks/${subtaskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-      router.refresh();
+      const response = await fetch(
+        `/api/cards/${card.id}/subtasks/${subtaskId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (response.ok) {
+        setLoading(false);
+        router.refresh();
+      } else {
+        throw new Error("Failed to toggle subtask");
+      }
     } catch (error) {
       console.error("Failed to toggle subtask:", error);
-    } finally {
+      toast({
+        title: "Error",
+        description: "Failed to update subtask",
+        variant: "destructive",
+      });
       setLoading(false);
     }
   };
@@ -479,22 +535,18 @@ export default function CardDetail({
       );
 
       if (response.ok) {
+        setLoading(false);
         router.refresh();
       } else {
-        setModalState({
-          isOpen: true,
-          type: "error",
-          message: "Failed to delete subtask",
-        });
+        throw new Error("Failed to delete subtask");
       }
     } catch (error) {
       console.error("Failed to delete subtask:", error);
-      setModalState({
-        isOpen: true,
-        type: "error",
-        message: "Failed to delete subtask",
+      toast({
+        title: "Error",
+        description: "Failed to delete subtask",
+        variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -517,12 +569,15 @@ export default function CardDetail({
       });
 
       if (response.ok) {
-        setEditDialogOpen(false);
-        router.refresh();
         toast({
           title: "Success",
           description: "Card updated successfully",
         });
+        setEditDialogOpen(false);
+        setLoading(false);
+        router.refresh();
+      } else {
+        throw new Error("Failed to update card");
       }
     } catch (error) {
       console.error("Failed to edit card:", error);
@@ -531,7 +586,6 @@ export default function CardDetail({
         description: "Failed to update card",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -545,13 +599,28 @@ export default function CardDetail({
       });
 
       if (response.ok) {
-        router.push(`/projects/${project.id}`);
-        router.refresh();
+        toast({
+          title: "Success",
+          description: "Card deleted successfully",
+        });
+        setDeleteDialogOpen(false);
+        // Small delay to allow toast to show before navigation
+        setTimeout(() => {
+          router.push(`/projects/${project.id}`);
+          router.refresh();
+        }, 100);
+      } else {
+        throw new Error("Failed to delete card");
       }
     } catch (error) {
       console.error("Failed to delete card:", error);
-    } finally {
+      toast({
+        title: "Error",
+        description: "Failed to delete card",
+        variant: "destructive",
+      });
       setLoading(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -592,7 +661,7 @@ export default function CardDetail({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6">
+    <div className="min-h-screen bg-background py-6">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Header */}
         <div className="mb-6">
@@ -616,7 +685,7 @@ export default function CardDetail({
                       {card.title}
                     </CardTitle>
                     <CardDescription>
-                      in {card.board.name} • {project.name}
+                      in {card.board?.name || "Unknown Board"} • {project.name}
                     </CardDescription>
                   </div>
                   {canEdit && (
@@ -673,16 +742,38 @@ export default function CardDetail({
                 {/* Description */}
                 <div>
                   <h3 className="font-semibold mb-2">Description</h3>
-                  <p className="text-gray-700 whitespace-pre-wrap">
+                  <p className="text-foreground whitespace-pre-wrap">
                     {card.description || "No description provided"}
                   </p>
                 </div>
 
                 {/* Metadata */}
-                <div className="text-sm text-gray-500 border-t pt-4">
+                <div className="text-sm text-muted-foreground border-t pt-4 space-y-1">
                   <p>Created by {card.creator.name}</p>
-                  <p>Created {formatRelativeTime(card.createdAt)}</p>
-                  <p>Updated {formatRelativeTime(card.updatedAt)}</p>
+                  {card.assignee && (
+                    <p>
+                      Assigned to:{" "}
+                      <span className="font-medium text-foreground">
+                        {card.assignee.name}
+                      </span>
+                    </p>
+                  )}
+                  {card.assignments &&
+                    card.assignments.length > 0 &&
+                    card.assignments[0].assigner && (
+                      <p>
+                        Assigned by:{" "}
+                        <span className="font-medium text-foreground">
+                          {card.assignments[0].assigner.name}
+                        </span>
+                      </p>
+                    )}
+                  <p>
+                    Created <RelativeTime date={card.createdAt} />
+                  </p>
+                  <p>
+                    Updated <RelativeTime date={card.updatedAt} />
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -692,19 +783,19 @@ export default function CardDetail({
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Subtasks</CardTitle>
-                  <span className="text-sm text-gray-500">
-                    {completedSubtasks}/{card.subtasks.length}
+                  <span className="text-sm text-muted-foreground">
+                    {completedSubtasks}/{card.subtasks?.length || 0}
                   </span>
                 </div>
-                {card.subtasks.length > 0 && (
+                {(card.subtasks?.length || 0) > 0 && (
                   <Progress value={subtaskProgress} className="h-2 mt-2" />
                 )}
               </CardHeader>
               <CardContent className="space-y-3">
-                {card.subtasks.map((subtask) => (
+                {(card.subtasks || []).map((subtask) => (
                   <div
                     key={subtask.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50"
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent"
                   >
                     <button
                       onClick={() =>
@@ -724,14 +815,14 @@ export default function CardDetail({
                     <span
                       className={`flex-1 ${
                         subtask.status === "DONE"
-                          ? "line-through text-gray-500"
+                          ? "line-through text-muted-foreground"
                           : ""
                       }`}
                     >
                       {subtask.title}
                     </span>
                     {subtask.assignee && (
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {subtask.assignee.name}
                       </span>
                     )}
@@ -771,8 +862,8 @@ export default function CardDetail({
                   </div>
                 )}
 
-                {card.subtasks.length === 0 && !canManageSubtasks && (
-                  <p className="text-center text-gray-500 py-4">
+                {(card.subtasks?.length || 0) === 0 && !canManageSubtasks && (
+                  <p className="text-center text-muted-foreground py-4">
                     No subtasks yet
                   </p>
                 )}
@@ -784,13 +875,13 @@ export default function CardDetail({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FaComment />
-                  Comments ({card.comments.length})
+                  Comments ({card.comments?.length || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Comment List */}
                 <div className="space-y-4 max-h-96 overflow-y-auto">
-                  {card.comments.map((comment) => (
+                  {(card.comments || []).map((comment) => (
                     <div
                       key={comment.id}
                       className="border-l-2 border-(--theme-primary) pl-4"
@@ -799,17 +890,18 @@ export default function CardDetail({
                         <span className="font-semibold text-sm">
                           {comment.user.name}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {formatRelativeTime(comment.createdAt)}
-                        </span>
+                        <RelativeTime
+                          date={comment.createdAt}
+                          className="text-xs text-muted-foreground"
+                        />
                       </div>
-                      <p className="text-gray-700 text-sm whitespace-pre-wrap">
+                      <p className="text-foreground text-sm whitespace-pre-wrap">
                         {comment.text}
                       </p>
                     </div>
                   ))}
-                  {card.comments.length === 0 && (
-                    <p className="text-center text-gray-500 py-4">
+                  {(card.comments?.length || 0) === 0 && (
+                    <p className="text-center text-muted-foreground py-4">
                       No comments yet. Be the first to comment!
                     </p>
                   )}
@@ -851,7 +943,7 @@ export default function CardDetail({
                   <div className="text-3xl font-bold text-(--theme-primary) mb-2">
                     {formatDuration(totalTime)}
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {activeTimer ? "Running..." : "Total Time Logged"}
                   </p>
                   {activeTimer && (
@@ -891,31 +983,50 @@ export default function CardDetail({
                 <div className="pt-4 border-t">
                   <h4 className="font-semibold text-sm mb-3">Recent Logs</h4>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
-                    {card.timeLogs.slice(0, 5).map((log) => (
-                      <div
-                        key={log.id}
-                        className="text-xs p-2 bg-gray-50 rounded"
-                      >
-                        <div className="flex justify-between mb-1">
-                          <span className="font-medium">{log.user.name}</span>
-                          {log.durationMinutes && (
-                            <span className="text-(--theme-primary) font-semibold">
-                              {formatDuration(log.durationMinutes)}
-                            </span>
-                          )}
+                    {(card.timeLogs || [])
+                      .filter((log) => log.startTime !== null) // Filter out corrupt data
+                      .slice(0, 5)
+                      .map((log) => (
+                        <div
+                          key={log.id}
+                          className="text-xs p-2 bg-accent rounded"
+                        >
+                          <div className="flex justify-between mb-1">
+                            <span className="font-medium">{log.user.name}</span>
+                            {log.durationMinutes && (
+                              <span className="text-(--theme-primary) font-semibold">
+                                {formatDuration(log.durationMinutes)}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-muted-foreground">
+                            {log.startTime ? (
+                              <>
+                                {new Date(log.startTime).toLocaleString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false,
+                                  }
+                                )}
+                                {log.endTime === null && (
+                                  <span className="text-(--theme-success) ml-2">
+                                    ● Active
+                                  </span>
+                                )}
+                              </>
+                            ) : (
+                              "Invalid Date"
+                            )}
+                          </div>
                         </div>
-                        <div className="text-gray-500">
-                          {new Date(log.startTime).toLocaleString()}
-                          {log.endTime === null && (
-                            <span className="text-(--theme-success) ml-2">
-                              ● Active
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {card.timeLogs.length === 0 && (
-                      <p className="text-gray-500 text-center py-2">
+                      ))}
+                    {(card.timeLogs?.length || 0) === 0 && (
+                      <p className="text-muted-foreground text-center py-2">
                         No time logs yet
                       </p>
                     )}
@@ -1067,7 +1178,7 @@ export default function CardDetail({
                     setEditForm({ ...editForm, deadline: e.target.value })
                   }
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   Set a deadline with time to get notifications when approaching
                 </p>
               </div>

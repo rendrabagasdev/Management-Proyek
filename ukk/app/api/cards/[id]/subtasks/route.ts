@@ -3,7 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { Status } from "@prisma/client";
-import { triggerCardEvent } from "@/lib/pusher";
+import { triggerCardEvent } from "@/lib/firebase-triggers";
 
 // GET all subtasks for a card
 export async function GET(

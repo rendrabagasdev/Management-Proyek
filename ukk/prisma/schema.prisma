@@ -20,6 +20,7 @@ model User {
   email        String     @unique
   passwordHash String
   globalRole   GlobalRole @default(MEMBER)
+  fcmToken     String?    @db.Text // Firebase Cloud Messaging token for push notifications
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 

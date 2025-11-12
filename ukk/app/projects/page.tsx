@@ -109,7 +109,7 @@ export default async function ProjectsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="text-gray-500">
+          <p className="text-muted-foreground">
             {userRole === "ADMIN"
               ? "All projects in the system"
               : "Your projects and collaborations"}
@@ -191,11 +191,11 @@ export default async function ProjectsPage() {
                   <CardContent className="space-y-4">
                     {/* Stats */}
                     <div className="flex justify-between text-sm">
-                      <div className="flex items-center gap-1 text-gray-600">
+                      <div className="flex items-center gap-1 text-foreground/70">
                         <FaUsers className="w-4 h-4" />
                         <span>{project.members.length} members</span>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-600">
+                      <div className="flex items-center gap-1 text-foreground/70">
                         <FaTasks className="w-4 h-4" />
                         <span>
                           {completedCards}/{totalCards} tasks
@@ -205,7 +205,7 @@ export default async function ProjectsPage() {
 
                     {/* Progress Bar */}
                     <div className="space-y-2">
-                      <div className="flex justify-between text-xs text-gray-500">
+                      <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Progress</span>
                         <span>{progress.toFixed(0)}%</span>
                       </div>
@@ -213,7 +213,7 @@ export default async function ProjectsPage() {
                     </div>
 
                     {/* Creator Info */}
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       Created by {project.creator.name}
                     </div>
                   </CardContent>
@@ -226,10 +226,10 @@ export default async function ProjectsPage() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
             <FaTasks className="w-16 h-16 text-gray-300 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <h3 className="text-xl font-semibold text-foreground/80 mb-2">
               No projects yet
             </h3>
-            <p className="text-gray-500 mb-6 text-center max-w-md">
+            <p className="text-muted-foreground mb-6 text-center max-w-md">
               {canCreateProject
                 ? "Create your first project to get started with task management and collaboration."
                 : "You haven't been added to any projects yet. Contact your project leader or admin."}

@@ -1,5 +1,9 @@
 import prisma from "@/lib/prisma";
-import { triggerPusherEvent } from "@/lib/pusher";
+import {
+  triggerFirebaseEvent,
+  triggerUserEvent,
+} from "@/lib/firebase-triggers";
+import { sendPushNotificationToUser } from "@/lib/fcm-admin";
 
 export type NotificationType =
   | "CARD_ASSIGNED"
@@ -20,7 +24,7 @@ interface CreateNotificationParams {
 }
 
 /**
- * Create a notification and trigger real-time event
+ * Create a notification and trigger real-time event + push notification
  */
 export async function createNotification({
   userId,
@@ -40,10 +44,23 @@ export async function createNotification({
       },
     });
 
-    // Trigger Pusher event for real-time notification
-    await triggerPusherEvent(`user-${userId}`, "notification:new", {
+    // Trigger Firebase event for real-time notification
+    await triggerUserEvent(userId, "notification:new", {
       notification,
       timestamp: new Date().toISOString(),
+    });
+
+    // Send push notification to user's device
+    await sendPushNotificationToUser(userId, {
+      title,
+      body: message,
+      link: link || "/notifications",
+      icon: "/icon-192x192.png",
+      badge: "/icon-72x72.png",
+      data: {
+        notificationId: notification.id.toString(),
+        type,
+      },
     });
 
     return notification;
@@ -64,14 +81,27 @@ export async function createBulkNotifications(
       data: notifications,
     });
 
-    // Trigger Pusher events for all users
+    // Trigger Firebase events and push notifications for all users
     await Promise.all(
-      notifications.map((notif) =>
-        triggerPusherEvent(`user-${notif.userId}`, "notification:new", {
+      notifications.map(async (notif) => {
+        // Firebase real-time event
+        await triggerFirebaseEvent(`user-${notif.userId}`, "notification:new", {
           notification: notif,
           timestamp: new Date().toISOString(),
-        })
-      )
+        });
+
+        // Push notification
+        await sendPushNotificationToUser(notif.userId, {
+          title: notif.title,
+          body: notif.message,
+          link: notif.link || "/notifications",
+          icon: "/icon-192x192.png",
+          badge: "/icon-72x72.png",
+          data: {
+            type: notif.type,
+          },
+        });
+      })
     );
 
     return created;

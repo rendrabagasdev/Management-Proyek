@@ -138,7 +138,7 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
               </Link>
             ))}
             {user.projectMembers.length === 0 && (
-              <p className="text-center text-gray-500 py-8">
+              <p className="text-center text-muted-foreground py-8">
                 You&apos;re not part of any projects yet
               </p>
             )}
@@ -157,14 +157,14 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
             {myCards.slice(0, 10).map((card: CardWithContext) => (
               <Link key={card.id} href={`/cards/${card.id}`}>
                 <div
-                  className={`p-4 border-l-4 rounded-lg hover:bg-gray-50 transition cursor-pointer ${
+                  className={`p-4 border-l-4 rounded-lg hover:bg-muted/50 transition-colors transition cursor-pointer ${
                     priorityColors[card.priority]
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1">
                       <h3 className="font-semibold">{card.title}</h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {card.projectName} • {card.boardName}
                       </p>
                     </div>
@@ -173,7 +173,7 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
                     </Badge>
                   </div>
                   {card.dueDate && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       Due: {formatRelativeTime(new Date(card.dueDate))}
                     </p>
                   )}
@@ -181,7 +181,7 @@ export function MemberDashboard({ user }: MemberDashboardProps) {
               </Link>
             ))}
             {myCards.length === 0 && (
-              <p className="text-center text-gray-500 py-8">
+              <p className="text-center text-muted-foreground py-8">
                 No tasks assigned yet
               </p>
             )}

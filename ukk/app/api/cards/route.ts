@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { triggerProjectEvent } from "@/lib/pusher";
+import { triggerProjectEvent } from "@/lib/firebase-triggers";
 
 // POST /api/cards - Create new card
 export async function POST(request: NextRequest) {

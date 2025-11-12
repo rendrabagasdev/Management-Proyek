@@ -1,0 +1,66 @@
+# Stage 1: Dependencies
+FROM node:latest AS deps
+WORKDIR /app
+
+# Install dependencies dengan retry logic dan optimisasi network
+COPY package.json package-lock.json* ./
+
+# Konfigurasi npm untuk network yang lebih stabil
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm config set fetch-retries 10 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm ci --omit=dev && \
+    npm cache clean --force
+
+# Stage 2: Build Next.js
+FROM node:latest AS builder
+WORKDIR /app
+
+# Install ALL dependencies (termasuk devDependencies untuk build)
+COPY package.json package-lock.json* ./
+RUN npm config set registry https://registry.npmmirror.com && \
+    npm config set fetch-retries 10 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-timeout 300000 && \
+    npm ci && \
+    npm cache clean --force
+
+COPY . .
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Build Next.js (dengan ignoreBuildErrors sudah di next.config.ts)
+RUN npm run build
+
+# Stage 3: Production runner
+FROM node:alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Create non-root user untuk security
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Copy file yang diperlukan dari builder
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Set permission untuk user nextjs
+RUN chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]

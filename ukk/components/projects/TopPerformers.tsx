@@ -97,7 +97,7 @@ export default function TopPerformers({ projectId }: TopPerformersProps) {
         return <FaTrophy className="text-(--theme-accent) text-2xl" />;
       case 2:
         return (
-          <FaMedal className="text-gray-400 dark:text-gray-500 text-2xl" />
+          <FaMedal className="text-gray-400 dark:text-muted-foreground text-2xl" />
         );
       case 3:
         return <FaMedal className="text-(--theme-warning) text-2xl" />;

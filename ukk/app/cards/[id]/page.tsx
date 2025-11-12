@@ -57,6 +57,32 @@ export default async function CardPage({ params }: CardPageProps) {
           email: true,
         },
       },
+      assignee: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      assignments: {
+        where: { isActive: true },
+        include: {
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          assigner: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
       subtasks: {
         include: {
           assignee: {

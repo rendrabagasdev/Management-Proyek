@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { triggerCardEvent, triggerProjectEvent } from "@/lib/pusher";
+import { triggerCardEvent, triggerProjectEvent } from "@/lib/firebase-triggers";
 
 // POST /api/cards/:id/time - Start time tracking
 export async function POST(
@@ -192,9 +192,8 @@ export async function POST(
       }),
     ] as const);
 
-    // Trigger realtime event for card detail
+    // Trigger realtime event for card detail (minimal payload - just notification)
     await triggerCardEvent(cardId.toString(), "timelog:started", {
-      timeLog,
       userId,
       timestamp: new Date().toISOString(),
     });
@@ -272,9 +271,8 @@ export async function PATCH(request: NextRequest) {
       },
     });
 
-    // Trigger realtime event
+    // Trigger realtime event (minimal payload - just notification)
     await triggerCardEvent(timeLog.cardId.toString(), "timelog:stopped", {
-      timeLog: updatedTimeLog,
       userId,
       timestamp: new Date().toISOString(),
     });

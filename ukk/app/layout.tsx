@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import SessionProvider from "@/components/SessionProvider";
 import { NotificationProvider } from "@/components/NotificationProvider";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SettingsProvider } from "@/components/SettingsProvider";
 import "./globals.css";
@@ -23,13 +24,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "UKK Project Management",
   description: "Sistem Manajemen Proyek untuk UKK RPL",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -51,6 +54,7 @@ export default async function RootLayout({
           <SettingsProvider>
             <SessionProvider session={session}>
               <NotificationProvider>
+                <ServiceWorkerRegister />
                 {session && (
                   <>
                     <Navbar />

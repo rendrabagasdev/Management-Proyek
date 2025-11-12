@@ -350,7 +350,7 @@ export default function NewProjectPage() {
                 rows={5}
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Optional: Add a brief description of the project
               </p>
             </div>
@@ -368,7 +368,7 @@ export default function NewProjectPage() {
                 }
                 disabled={loading}
               />
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Optional: Set a deadline to track project completion and get
                 notifications
               </p>

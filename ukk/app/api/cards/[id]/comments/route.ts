@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { triggerCardEvent } from "@/lib/pusher";
+import { triggerCardEvent } from "@/lib/firebase-triggers";
 import {
   notifyCommentAdded,
   notifyMentionInComment,

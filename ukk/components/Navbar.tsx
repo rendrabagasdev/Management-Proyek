@@ -177,6 +177,12 @@ export function Navbar() {
                 )}
 
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    <FaUser className="mr-2 w-4 h-4" />
+                    <span>Profile Settings</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => signOut({ callbackUrl: "/login" })}
                   className="cursor-pointer"
@@ -240,6 +246,16 @@ export function Navbar() {
                 </Link>
               );
             })}
+
+            {/* Profile Link */}
+            <Link
+              href="/profile"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-muted"
+            >
+              <FaUser className="w-4 h-4" />
+              <span>Profile Settings</span>
+            </Link>
 
             {/* Sign Out */}
             <button

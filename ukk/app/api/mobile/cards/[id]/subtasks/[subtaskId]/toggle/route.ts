@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ExtractMobileJwtFromRequest } from "@/lib/auth-mobile";
 import { Status } from "@prisma/client";
-import { triggerCardEvent } from "@/lib/pusher";
+import { triggerCardEvent } from "@/lib/firebase-triggers";
 
 // CORS headers
 const corsHeaders = {

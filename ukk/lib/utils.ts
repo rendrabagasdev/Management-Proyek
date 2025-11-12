@@ -30,9 +30,19 @@ export function formatDuration(seconds: number): string {
 }
 
 // Format relative time (e.g., "2 hours ago", "3 days ago")
-export function formatRelativeTime(date: Date | string): string {
+export function formatRelativeTime(
+  date: Date | string | null | undefined
+): string {
+  if (!date) return "Unknown";
+
   const now = new Date();
   const targetDate = typeof date === "string" ? new Date(date) : date;
+
+  // Check if date is valid
+  if (!targetDate || isNaN(targetDate.getTime())) {
+    return "Unknown";
+  }
+
   const diffMs = now.getTime() - targetDate.getTime();
   const diffSeconds = Math.floor(diffMs / 1000);
   const diffMinutes = Math.floor(diffSeconds / 60);

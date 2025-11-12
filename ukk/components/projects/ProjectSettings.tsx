@@ -324,7 +324,15 @@ export default function ProjectSettings({
         throw new Error(data.error || "Failed to delete project");
       }
 
-      router.push("/projects");
+      // Close dialog and show success before navigation
+      setShowDeleteDialog(false);
+      setLoading(false);
+
+      // Small delay to allow UI to update before navigation
+      setTimeout(() => {
+        router.push("/projects");
+        router.refresh();
+      }, 100);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete project");
       setLoading(false);
@@ -383,8 +391,7 @@ export default function ProjectSettings({
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <label htmlFor="projectName" className="text-sm font-medium">
-                Project Name{" "}
-                <span className="text-(--theme-danger)">*</span>
+                Project Name <span className="text-(--theme-danger)">*</span>
               </label>
               <Input
                 id="projectName"

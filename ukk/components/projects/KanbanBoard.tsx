@@ -15,10 +15,10 @@ import Link from "next/link";
 import { Priority, Status, ProjectRole } from "@prisma/client";
 import { formatDuration } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AssignmentModal from "@/components/projects/AssignmentModal";
-import { usePusherEvent } from "@/lib/pusher-client";
 import { useToast } from "@/hooks/use-toast";
+import { useFirebaseEvent } from "@/lib/firebase-hooks";
 
 interface KanbanBoardProps {
   project: {
@@ -42,6 +42,7 @@ interface KanbanBoardProps {
         priority: Priority;
         status: Status;
         dueDate: Date | null;
+        deadline: Date | null;
         assigneeId: number | null;
         creator: {
           id: number;
@@ -110,60 +111,44 @@ export default function KanbanBoard({
   const canMoveCard = userRole === "LEADER" || isCreator;
   const canAssignCard = userRole === "LEADER" || isCreator;
 
+  // Sync state when project.boards changes (e.g., after router.refresh())
+  useEffect(() => {
+    setBoards(project.boards);
+  }, [project.boards]);
+
   // For members, only show cards assigned to them
   const isMember = userRole !== "LEADER" && !isCreator;
 
   // Realtime: Listen to card created
-  usePusherEvent(`project-${project.id}`, "card:created", (data) => {
+  useFirebaseEvent(`projects/${project.id}/events`, "card:created", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { card, boardId, userId: eventUserId } = eventData;
-    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "New Card Created",
-        description: `Card "${typedCard.title}" was created`,
+        description: "A new card was created",
       });
     }
-
-    setBoards((prevBoards) =>
-      prevBoards.map((board) =>
-        board.id === boardId
-          ? { ...board, cards: [...board.cards, typedCard] }
-          : board
-      )
-    );
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to card updated
-  usePusherEvent(`project-${project.id}`, "card:updated", (data) => {
+  useFirebaseEvent(`projects/${project.id}/events`, "card:updated", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { card, boardId, userId: eventUserId } = eventData;
-    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Card Updated",
-        description: `Card "${typedCard.title}" was updated`,
+        description: "A card was updated",
       });
     }
-
-    setBoards((prevBoards) =>
-      prevBoards.map((board) =>
-        board.id === boardId
-          ? {
-              ...board,
-              cards: board.cards.map((c) =>
-                c.id === typedCard.id ? typedCard : c
-              ),
-            }
-          : board
-      )
-    );
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to card deleted
-  usePusherEvent(`project-${project.id}`, "card:deleted", (data) => {
+  useFirebaseEvent(`projects/${project.id}/events`, "card:deleted", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { cardId, boardId, userId: eventUserId } = eventData;
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Card Deleted",
@@ -171,40 +156,20 @@ export default function KanbanBoard({
         variant: "destructive",
       });
     }
-
-    setBoards((prevBoards) =>
-      prevBoards.map((board) =>
-        board.id === boardId
-          ? { ...board, cards: board.cards.filter((c) => c.id !== cardId) }
-          : board
-      )
-    );
+    router.refresh(); // Fetch fresh data from database
   });
 
   // Realtime: Listen to card assigned
-  usePusherEvent(`project-${project.id}`, "card:assigned", (data) => {
+  useFirebaseEvent(`projects/${project.id}/events`, "card:assigned", (data) => {
     const eventData = data as Record<string, unknown>;
-    const { card, boardId, userId: eventUserId } = eventData;
-    const typedCard = card as (typeof project.boards)[0]["cards"][0];
+    const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
       toast({
         title: "Card Assigned",
-        description: `Card "${typedCard.title}" was assigned`,
+        description: "A card was assigned",
       });
     }
-
-    setBoards((prevBoards) =>
-      prevBoards.map((board) =>
-        board.id === boardId
-          ? {
-              ...board,
-              cards: board.cards.map((c) =>
-                c.id === typedCard.id ? typedCard : c
-              ),
-            }
-          : board
-      )
-    );
+    router.refresh(); // Fetch fresh data from database
   });
 
   const filterCardsByUser = (cards: (typeof project.boards)[0]["cards"]) => {
@@ -371,6 +336,27 @@ export default function KanbanBoard({
                       0
                     ) || 0;
 
+                  // Deadline calculations
+                  let deadlineInfo = null;
+                  if (card.deadline) {
+                    const deadline = new Date(card.deadline);
+                    const now = new Date();
+                    const isOverdue = deadline < now && card.status !== "DONE";
+                    const daysLeft = Math.ceil(
+                      (deadline.getTime() - now.getTime()) /
+                        (1000 * 60 * 60 * 24)
+                    );
+                    const isApproaching =
+                      daysLeft > 0 && daysLeft <= 3 && card.status !== "DONE";
+
+                    deadlineInfo = {
+                      deadline,
+                      isOverdue,
+                      isApproaching,
+                      daysLeft,
+                    };
+                  }
+
                   return (
                     <Card
                       key={card.id}
@@ -400,6 +386,46 @@ export default function KanbanBoard({
                           <p className="text-xs text-muted-foreground line-clamp-2">
                             {card.description}
                           </p>
+                        )}
+
+                        {/* Deadline Warning */}
+                        {deadlineInfo && (
+                          <div
+                            className={`text-xs px-2 py-1 rounded flex items-center gap-1 ${
+                              deadlineInfo.isOverdue
+                                ? "bg-destructive/10 text-destructive font-semibold"
+                                : deadlineInfo.isApproaching
+                                ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 font-medium"
+                                : "text-muted-foreground"
+                            }`}
+                          >
+                            {deadlineInfo.isOverdue ? (
+                              <>
+                                <FaClock className="w-3 h-3" />
+                                <span>
+                                  Overdue:{" "}
+                                  {deadlineInfo.deadline.toLocaleDateString()}
+                                </span>
+                              </>
+                            ) : deadlineInfo.isApproaching ? (
+                              <>
+                                <FaClock className="w-3 h-3" />
+                                <span>
+                                  Due in {deadlineInfo.daysLeft} day
+                                  {deadlineInfo.daysLeft > 1 ? "s" : ""}:{" "}
+                                  {deadlineInfo.deadline.toLocaleDateString()}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <FaClock className="w-3 h-3" />
+                                <span>
+                                  Due:{" "}
+                                  {deadlineInfo.deadline.toLocaleDateString()}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         )}
 
                         {/* Move Card Dropdown */}

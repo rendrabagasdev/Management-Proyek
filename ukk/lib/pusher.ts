@@ -27,7 +27,7 @@ export const triggerProjectEvent = (
   event: string,
   data: Record<string, unknown>
 ) => {
-  return triggerPusherEvent(`project-${projectId}`, event, data);
+  return triggerFirebaseEvent(`project-${projectId}`, event, data);
 };
 
 // Helper untuk card channel
@@ -36,5 +36,5 @@ export const triggerCardEvent = (
   event: string,
   data: Record<string, unknown>
 ) => {
-  return triggerPusherEvent(`card-${cardId}`, event, data);
+  return triggerFirebaseEvent(`card-${cardId}`, event, data);
 };

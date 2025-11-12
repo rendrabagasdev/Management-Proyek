@@ -87,7 +87,7 @@ export default function UserManagement({ users }: UserManagementProps) {
       case "MEMBER":
         return "bg-(--theme-primary-light) text-(--theme-primary-dark)";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -292,7 +292,7 @@ export default function UserManagement({ users }: UserManagementProps) {
               return (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -318,7 +318,7 @@ export default function UserManagement({ users }: UserManagementProps) {
                     </div>
 
                     {/* User Activity Stats */}
-                    <div className="flex items-center gap-4 text-sm text-gray-600 ml-13">
+                    <div className="flex items-center gap-4 text-sm text-foreground/70 ml-13">
                       <div className="flex items-center gap-1">
                         <FaProjectDiagram className="w-3 h-3" />
                         <span>
@@ -347,7 +347,9 @@ export default function UserManagement({ users }: UserManagementProps) {
                     {/* Projects List */}
                     {user.projectMembers.length > 0 && (
                       <div className="mt-2 ml-13">
-                        <p className="text-xs text-gray-500 mb-1">Projects:</p>
+                        <p className="text-xs text-muted-foreground mb-1">
+                          Projects:
+                        </p>
                         <div className="flex flex-wrap gap-1">
                           {user.projectMembers.map((pm) => (
                             <Badge
@@ -384,7 +386,7 @@ export default function UserManagement({ users }: UserManagementProps) {
             })}
 
             {filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 No users found matching your search.
               </div>
             )}

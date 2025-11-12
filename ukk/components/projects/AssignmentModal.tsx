@@ -53,7 +53,7 @@ export default function AssignmentModal({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "TODO":
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
       case "IN_PROGRESS":
         return "bg-(--theme-primary-light) text-(--theme-primary-dark)";
       case "REVIEW":
@@ -61,7 +61,7 @@ export default function AssignmentModal({
       case "DONE":
         return "bg-(--theme-success-light) text-(--theme-success-dark)";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-muted text-foreground";
     }
   };
 
@@ -104,7 +104,7 @@ export default function AssignmentModal({
                       <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">
                         {card.title}
                       </p>
-                      <p className="text-[10px] sm:text-xs text-gray-500">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         Card #{card.cardId}
                       </p>
                     </div>

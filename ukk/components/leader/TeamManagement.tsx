@@ -172,7 +172,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
             <FaUsers className="text-(--theme-primary)" />
             Team Management
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             Monitor and manage your team performance
           </p>
         </div>
@@ -201,7 +201,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-foreground/70">
               Team Members
             </CardTitle>
             <FaUsers className="text-(--theme-primary)" />
@@ -213,7 +213,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-foreground/70">
               Active Projects
             </CardTitle>
             <FaProjectDiagram className="text-(--theme-secondary)" />
@@ -225,7 +225,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-foreground/70">
               Total Tasks
             </CardTitle>
             <FaTasks className="text-(--theme-success)" />
@@ -239,7 +239,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-foreground/70">
               Time Tracked
             </CardTitle>
             <FaClock className="text-(--theme-accent)" />
@@ -283,7 +283,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold">{member.user.name}</h3>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-muted-foreground">
                         {member.user.email}
                       </p>
                     </div>
@@ -291,7 +291,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                       <p className="text-2xl font-bold text-(--theme-success)">
                         {member.completionRate.toFixed(0)}%
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {member.completedCards}/{member.assignedCards} completed
                       </p>
                     </div>
@@ -316,7 +316,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-semibold">{member.user.name}</h3>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {member.user.email}
                         </p>
                         <div className="flex gap-2 mt-1">
@@ -332,31 +332,41 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                         <div className="text-2xl font-bold">
                           {member.completionRate.toFixed(0)}%
                         </div>
-                        <p className="text-xs text-gray-500">completion</p>
+                        <p className="text-xs text-muted-foreground">
+                          completion
+                        </p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t">
                       <div>
-                        <p className="text-xs text-gray-500">Assigned</p>
+                        <p className="text-xs text-muted-foreground">
+                          Assigned
+                        </p>
                         <p className="text-lg font-semibold">
                           {member.assignedCards}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Completed</p>
+                        <p className="text-xs text-muted-foreground">
+                          Completed
+                        </p>
                         <p className="text-lg font-semibold text-(--theme-success)">
                           {member.completedCards}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Time Logged</p>
+                        <p className="text-xs text-muted-foreground">
+                          Time Logged
+                        </p>
                         <p className="text-lg font-semibold">
                           {formatDuration(member.totalTime)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500">Comments</p>
+                        <p className="text-xs text-muted-foreground">
+                          Comments
+                        </p>
                         <p className="text-lg font-semibold">
                           {member.totalComments}
                         </p>
@@ -493,7 +503,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                             <span className="font-medium">
                               {member.user.name}
                             </span>
-                            <span className="text-sm text-gray-500 ml-2">
+                            <span className="text-sm text-muted-foreground ml-2">
                               ({member.user.globalRole})
                             </span>
                           </div>
@@ -509,7 +519,7 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
                           </div>
                         </div>
                         <Progress value={workloadPercentage} className="h-2" />
-                        <div className="flex gap-2 text-xs text-gray-500">
+                        <div className="flex gap-2 text-xs text-muted-foreground">
                           <span>
                             In Progress:{" "}
                             {
@@ -555,10 +565,10 @@ export default function TeamManagement({ projects }: TeamManagementProps) {
               <Link
                 key={project.id}
                 href={`/projects/${project.id}/analytics`}
-                className="p-4 border rounded-lg hover:bg-gray-50 transition"
+                className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <h3 className="font-semibold mb-1">{project.name}</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {project.members.length} members • View analytics
                 </p>
               </Link>

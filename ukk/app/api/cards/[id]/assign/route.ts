@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { triggerCardEvent, triggerProjectEvent } from "@/lib/pusher";
+import { triggerCardEvent, triggerProjectEvent } from "@/lib/firebase-triggers";
 
 export async function PATCH(
   request: NextRequest,

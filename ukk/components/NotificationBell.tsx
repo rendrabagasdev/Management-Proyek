@@ -14,8 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FaBell, FaCheck, FaTrash } from "react-icons/fa";
-import { usePusherEvent } from "@/lib/pusher-client";
 import { formatDistanceToNow } from "date-fns";
+import { useFirebaseEvent } from "@/lib/firebase-hooks";
 
 interface Notification {
   id: number;
@@ -46,7 +46,7 @@ export function NotificationBell() {
         const data = await response.json();
         setNotifications(data.notifications);
         setUnreadCount(
-          data.notifications.filter((n: Notification) => !n.isRead).length
+          data.notifications.filter((n: Notification) => n && !n.isRead).length
         );
       }
     } catch (error) {
@@ -81,12 +81,13 @@ export function NotificationBell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
-  // Listen for new notifications via Pusher
-  usePusherEvent(
-    userId ? `user-${userId}` : "",
+  // Listen for new notifications via Firebase
+  useFirebaseEvent(
+    userId ? `users/${userId}/events` : "",
     "notification:new",
-    (data: Record<string, unknown>) => {
-      const notification = data.notification as Notification;
+    (data: unknown) => {
+      const typedData = data as Record<string, unknown>;
+      const notification = typedData.notification as Notification;
       setNotifications((prev) => [notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     }
@@ -157,8 +158,12 @@ export function NotificationBell() {
 
   if (!session) return null;
 
-  const unreadNotifications = notifications.filter((n) => !n.isRead);
-  const recentNotifications = notifications.slice(0, 10);
+  const unreadNotifications = (notifications || []).filter(
+    (n) => n && !n.isRead
+  );
+  const recentNotifications = (notifications || [])
+    .filter((n) => n)
+    .slice(0, 10);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -220,13 +225,13 @@ export function NotificationBell() {
               </>
             )}
 
-            {recentNotifications.filter((n) => n.isRead).length > 0 && (
+            {recentNotifications.filter((n) => n && n.isRead).length > 0 && (
               <>
                 <div className="px-2 py-1 text-xs font-semibold text-muted-foreground">
                   Recent
                 </div>
                 {recentNotifications
-                  .filter((n) => n.isRead)
+                  .filter((n) => n && n.isRead)
                   .slice(0, 5)
                   .map((notification) => (
                     <NotificationItem
