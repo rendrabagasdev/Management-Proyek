@@ -19,7 +19,7 @@ FROM node:latest AS builder
 WORKDIR /app
 
 # Install ALL dependencies (termasuk devDependencies untuk build)
-COPY package.json package-lock.json* ./
+COPY package*.json ./
 RUN npm config set registry https://registry.npmmirror.com && \
     npm config set fetch-retries 10 && \
     npm config set fetch-retry-mintimeout 20000 && \
