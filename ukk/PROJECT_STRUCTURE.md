@@ -40,6 +40,7 @@ ukk/
 ## 🚀 Quick Start
 
 ### Local Development
+
 ```bash
 npm install
 npx prisma generate
@@ -48,6 +49,7 @@ npm run dev
 ```
 
 ### VPS Deployment
+
 ```bash
 ./deploy-vps.sh
 # Choose option 1 for full setup
@@ -57,25 +59,27 @@ npm run dev
 
 ## 📋 Key Files
 
-| File | Purpose |
-|------|---------|
-| `deploy-vps.sh` | Auto-deploy to VPS (PM2 + Nginx) |
-| `nginx-cloudflare.conf.template` | Production Nginx config |
-| `DEPLOY_VPS_NO_DOCKER.md` | Complete deployment guide |
-| `.env` | Environment variables (not in git) |
-| `prisma/schema.prisma` | Database schema |
-| `prisma/seed.js` | Database seeder |
+| File                             | Purpose                            |
+| -------------------------------- | ---------------------------------- |
+| `deploy-vps.sh`                  | Auto-deploy to VPS (PM2 + Nginx)   |
+| `nginx-cloudflare.conf.template` | Production Nginx config            |
+| `DEPLOY_VPS_NO_DOCKER.md`        | Complete deployment guide          |
+| `.env`                           | Environment variables (not in git) |
+| `prisma/schema.prisma`           | Database schema                    |
+| `prisma/seed.js`                 | Database seeder                    |
 
 ---
 
 ## 🔧 Configuration
 
 ### Local (Development)
+
 - Database: `mysql://root:password@localhost:3306/db_name`
 - Port: `3000`
 - Hot reload: ✅
 
 ### VPS (Production)
+
 - Database: `mysql://ukk_user:password@localhost:3306/db_name`
 - Port: `3000` (internal)
 - Nginx: Port `80/443` (public)
@@ -96,6 +100,7 @@ The following are **backed up** but not used in production:
 - ❌ `mysql-config/` folder → Use system MySQL config
 
 **Why removed?**
+
 - ✅ Faster deployment (30 sec vs 2-3 min)
 - ✅ Easier debugging (direct access)
 - ✅ Tailwind CSS always works
