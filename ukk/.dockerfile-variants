@@ -1,0 +1,91 @@
+# ╔═══════════════════════════════════════════════════════════════╗
+# ║  📦 DOCKERFILE VARIANTS - Node.js Version Guide               ║
+# ╚═══════════════════════════════════════════════════════════════╝
+
+## Current Setup (Development Match)
+- Builder: `node:latest` (match local development)
+- Runner: `node:alpine` (smallest production image)
+
+## 🎯 Recommended for Production VPS
+
+If you need LTS stability for production, change Dockerfile to:
+
+```dockerfile
+# Stage 1: Builder
+FROM node:20-slim AS builder  # LTS until April 2026
+WORKDIR /app
+# ... rest of builder stage
+
+# Stage 2: Runner
+FROM node:20-alpine AS runner  # LTS Alpine variant
+WORKDIR /app
+# ... rest of runner stage
+```
+
+## 📊 Version Comparison
+
+| Version | Status | Support Until | Use Case |
+|---------|--------|---------------|----------|
+| `node:23` | Current | Oct 2024 | Latest features, dev |
+| `node:22` | LTS | Apr 2027 | Stable, recommended |
+| `node:20` | LTS | Apr 2026 | Very stable |
+| `node:18` | LTS | Apr 2025 | Legacy support |
+| `node:latest` | Alias | - | Always newest (dev) |
+
+## 🔄 Quick Switch Commands
+
+### Use Latest (Current Setup)
+```bash
+# Already set! No changes needed
+./docker.sh build
+```
+
+### Switch to LTS (Node 20)
+```bash
+# Edit DockerFile, change:
+# FROM node:latest → FROM node:20-slim
+# FROM node:alpine → FROM node:20-alpine
+
+# Then rebuild
+./docker.sh build
+```
+
+### Switch to LTS (Node 22)
+```bash
+# Edit DockerFile, change:
+# FROM node:latest → FROM node:22-slim
+# FROM node:alpine → FROM node:22-alpine
+
+# Then rebuild
+./docker.sh build
+```
+
+## 💡 Best Practice
+
+**Development**: `node:latest` (match local)  
+**Staging/Test**: `node:22-slim` (newest LTS)  
+**Production**: `node:20-slim` (proven stable)
+
+## ⚠️ Important Notes
+
+1. **`node:latest` changes over time**
+   - Today: Node 23.x
+   - Next month: Might be 24.x
+   - Risk: Builds tidak reproducible
+
+2. **Pinned versions (e.g., `node:20.11.1`) are best**
+   - Most stable for production
+   - Rebuild = same result always
+   - Example: `FROM node:20.11.1-slim AS builder`
+
+3. **Alpine variants (`-alpine`)**
+   - Smallest size (~150MB vs ~1GB)
+   - Missing some GNU tools
+   - Great for production runners
+
+## 🚀 Current Strategy
+
+You're using `node:latest` to **match your development environment**.  
+This is **perfect for development consistency**.
+
+When ready for production, consider pinning to specific LTS version.

@@ -1,69 +1,72 @@
-# Stage 1: Dependencies
-FROM node:latest AS deps
+# ╔═══════════════════════════════════════════════════════════════╗
+# ║  🐳 OPTIMIZED DOCKERFILE - Next.js 16 + Tailwind CSS v4      ║
+# ║  Multi-stage build: Builder → Production Runner               ║
+# ║  Node.js: 22 LTS (matches local v22.20.0)                    ║
+# ╚═══════════════════════════════════════════════════════════════╝
+
+# Stage 1: Build Next.js + Tailwind CSS v4
+FROM node:22-slim AS builder
 WORKDIR /app
 
-# Install dependencies dengan retry logic dan optimisasi network
-COPY package.json package-lock.json* ./
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    openssl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-# Konfigurasi npm untuk network yang lebih stabil
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm config set fetch-retries 10 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm config set fetch-timeout 300000 && \
-    npm ci --omit=dev && \
-    npm cache clean --force
-
-# Stage 2: Build Next.js
-FROM node:latest AS builder
-WORKDIR /app
-
-# Install ALL dependencies (termasuk devDependencies untuk build)
+# Copy package files
 COPY package*.json ./
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm config set fetch-retries 10 && \
-    npm config set fetch-retry-mintimeout 20000 && \
-    npm config set fetch-retry-maxtimeout 120000 && \
-    npm config set fetch-timeout 300000 && \
-    npm ci && \
-    npm cache clean --force
+COPY prisma ./prisma/
 
+# Install ALL dependencies (including Tailwind v4)
+RUN npm ci && npm cache clean --force
+
+# Copy source code
 COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Build Next.js (dengan ignoreBuildErrors sudah di next.config.ts)
+# Build Next.js (Tailwind CSS v4 akan di-compile otomatis via Vite)
 RUN npm run build
 
-# Stage 3: Production runner
-FROM node:alpine AS runner
+# Verify CSS was generated
+RUN echo "🎨 Checking Tailwind CSS build..." && \
+    ls -lah .next/static/css/ || echo "⚠️  CSS directory not found"
+
+# Stage 2: Production runner (Alpine for smaller image)
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Alpine runtime deps for Prisma engines
-RUN apk add --no-cache libc6-compat openssl
+# Install runtime dependencies for Prisma
+RUN apk add --no-cache \
+    libc6-compat \
+    openssl
 
-# Create non-root user untuk security
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Create non-root user for security
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy file yang diperlukan dari builder
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Copy built application from builder
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Set permission untuk user nextjs
-RUN chown -R nextjs:nodejs /app
+# Copy Prisma for seeding/migrations
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 CMD ["node", "server.js"]

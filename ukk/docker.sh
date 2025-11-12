@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ╔═══════════════════════════════════════════════════════════════╗
-# ║  🐳 DOCKER ULTIMATE SCRIPT - ALL-IN-ONE                       ║
-# ║  Build, Deploy, Manage, Security - Node.js Latest             ║
+# ║  🐳 DOCKER ULTIMATE SCRIPT - UNIFIED (Simple + Secure)       ║
+# ║  Build, Deploy, Manage, Security - Node.js 22 LTS            ║
 # ╚═══════════════════════════════════════════════════════════════╝
 
 set -e
@@ -15,8 +15,9 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Configuration
-COMPOSE_FILE="docker-compose.secure.yml"
+COMPOSE_FILE="docker-compose.yml"
 COMMAND=${1:-help}
+DOCKER_MODE=${DOCKER_MODE:-secure}  # Default to secure mode
 
 # Helper functions
 success() { echo -e "${GREEN}✅ $1${NC}"; }
@@ -66,7 +67,7 @@ EOF
 # Build command
 cmd_build() {
     show_banner
-    info "Docker Build dengan Node.js Latest"
+    info "Docker Build dengan Node.js 22 LTS (Tailwind CSS v4)"
     echo ""
     
     check_prereqs
@@ -74,7 +75,9 @@ cmd_build() {
     echo "📋 System Info:"
     echo "  • Docker: $(docker --version | cut -d' ' -f3)"
     echo "  • Docker Compose: $(docker-compose --version | cut -d' ' -f4)"
-    echo "  • Node.js Image: node:latest + node:alpine"
+    echo "  • Node.js Local: $(node --version 2>/dev/null || echo 'N/A')"
+    echo "  • Node.js Image: node:22-slim + node:22-alpine"
+    echo "  • Tailwind: v4 (no config, auto via Vite)"
     echo ""
     
     echo "Pilih mode build:"
@@ -129,16 +132,27 @@ cmd_quickstart() {
     show_banner
     check_prereqs
 
+    # Ask for mode
+    echo "🔐 Pilih deployment mode:"
+    echo "1) Simple   - Direct access (App:3000, MySQL:3307)"
+    echo "2) Secure   - Nginx + Fail2ban (Port 80/443) [RECOMMENDED]"
+    echo ""
+    read -p "Pilih mode (1-2) [default: 2]: " MODE_CHOICE
+    MODE_CHOICE=${MODE_CHOICE:-2}
+
+    if [ "$MODE_CHOICE" = "1" ]; then
+        PROFILE_ARG=""
+        info "Mode: SIMPLE (Direct Access)"
+    else
+        PROFILE_ARG="--profile secure"
+        info "Mode: SECURE (Nginx + Fail2ban + Cloudflare Ready)"
+    fi
+
     warning "Building app image (no cache)..."
     docker-compose -f $COMPOSE_FILE build --no-cache app || { error "Build failed"; exit 1; }
 
-    # Start stack; skip fail2ban if configs are missing
-    if [ ! -f fail2ban/config/jail.local ]; then
-        warning "Fail2ban config not found. Starting stack without fail2ban..."
-        docker-compose -f $COMPOSE_FILE up -d --scale fail2ban=0
-    else
-        docker-compose -f $COMPOSE_FILE up -d
-    fi
+    warning "Starting services..."
+    docker-compose -f $COMPOSE_FILE up -d $PROFILE_ARG
 
     wait_for_db
 
@@ -151,14 +165,27 @@ cmd_quickstart() {
     docker-compose -f $COMPOSE_FILE exec -T app npx prisma migrate deploy || warning "Migration skipped"
 
     echo ""
-    info "Seeding database (optional)..."
-    docker-compose -f $COMPOSE_FILE exec -T app npx prisma db seed || warning "Seeding skipped"
+    info "Seeding database..."
+    docker-compose -f $COMPOSE_FILE exec -T app node prisma/seed.js || warning "Seeding skipped (no data)"
 
     echo ""
     success "Quickstart complete!"
-    echo "🌐 Access via Nginx: http://localhost"
-    echo "🧩 App logs: ./docker.sh logs app"
-    echo "🛡️  Nginx logs: ./docker.sh logs nginx"
+    echo ""
+    if [ "$MODE_CHOICE" = "1" ]; then
+        echo "🌐 Access (Simple Mode):"
+        echo "  • App: http://localhost:3000"
+        echo "  • MySQL: localhost:3307"
+    else
+        echo "🌐 Access (Secure Mode):"
+        echo "  • Web: http://localhost (via Nginx)"
+        echo "  • SSL: https://localhost (if configured)"
+        echo "  • App direct: Blocked (internal only)"
+    fi
+    echo ""
+    echo "📋 Useful commands:"
+    echo "  ./docker.sh logs       → View all logs"
+    echo "  ./docker.sh status     → Check status"
+    echo "  ./docker.sh test       → Test security (secure mode)"
 }
 
 # Rebuild command: clean app image cache and restart services
@@ -177,12 +204,26 @@ cmd_rebuild() {
 # Up command
 cmd_up() {
     show_banner
-    success "Starting containers with security layers..."
     
-    # Create directories if not exist
-    mkdir -p nginx/ssl fail2ban/data mysql-config
+    # Ask for mode
+    echo "🔐 Pilih deployment mode:"
+    echo "1) Simple   - Direct access (App:3000, MySQL:3307)"
+    echo "2) Secure   - Nginx + Fail2ban (Port 80/443) [RECOMMENDED]"
+    echo ""
+    read -p "Pilih mode (1-2) [default: 2]: " MODE_CHOICE
+    MODE_CHOICE=${MODE_CHOICE:-2}
+
+    if [ "$MODE_CHOICE" = "1" ]; then
+        PROFILE_ARG=""
+        success "Starting containers (Simple Mode)..."
+    else
+        PROFILE_ARG="--profile secure"
+        success "Starting containers with security layers (Secure Mode)..."
+        # Create directories if not exist
+        mkdir -p nginx/ssl nginx/conf.d fail2ban/data fail2ban/config mysql-config
+    fi
     
-    docker-compose -f $COMPOSE_FILE up -d
+    docker-compose -f $COMPOSE_FILE up -d $PROFILE_ARG
     
     echo ""
     warning "Waiting for services to be ready..."
@@ -193,21 +234,28 @@ cmd_up() {
     docker-compose -f $COMPOSE_FILE exec app npx prisma migrate deploy || warning "Migration skipped"
     
     echo ""
-    info "Seeding database (optional)..."
-    docker-compose -f $COMPOSE_FILE exec app npx prisma db seed || warning "Seeding skipped"
+    info "Seeding database..."
+    docker-compose -f $COMPOSE_FILE exec app node prisma/seed.js || warning "Seeding skipped (no data)"
     
     echo ""
     success "All services are running!"
     echo ""
-    echo "🔐 Security Stack Status:"
-    echo "  ✓ Nginx Reverse Proxy (Port 80/443)"
-    echo "  ✓ Rate Limiting Active (10 req/s)"
-    echo "  ✓ Fail2ban Protection Active"
-    echo "  ✓ Backend Network Isolated"
-    echo ""
-    echo "🌐 Access at:"
-    echo "  • http://localhost (via Nginx - secure)"
-    echo "  • http://localhost:3000 (direct - if exposed)"
+    
+    if [ "$MODE_CHOICE" = "1" ]; then
+        echo "🌐 Access (Simple Mode):"
+        echo "  • App: http://localhost:3000"
+        echo "  • MySQL: localhost:3307"
+    else
+        echo "🔐 Security Stack Status:"
+        echo "  ✓ Nginx Reverse Proxy (Port 80/443)"
+        echo "  ✓ Rate Limiting Active"
+        echo "  ✓ Fail2ban Protection Active"
+        echo "  ✓ Backend Network Isolated"
+        echo ""
+        echo "🌐 Access (Secure Mode):"
+        echo "  • http://localhost (via Nginx)"
+        echo "  • https://localhost (if SSL configured)"
+    fi
     echo ""
     echo "📊 Check status: ./docker.sh status"
     echo "📋 View logs: ./docker.sh logs"
