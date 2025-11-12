@@ -23,8 +23,8 @@ info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 APP_NAME="ukk-app"
 APP_PORT=3000
 DB_NAME="ukk_project_management"
-DB_USER="ukk_user"
-DB_PASS="ukk_password"
+DB_USER="root"
+DB_PASS="FreeFire90"
 
 show_banner() {
     cat << 'EOF'
