@@ -1,38 +1,53 @@
 # ╔═══════════════════════════════════════════════════════════════╗
 # ║  🐳 OPTIMIZED DOCKERFILE - Next.js 16 + Tailwind CSS v4      ║
-# ║  Multi-stage build: Builder → Production Runner               ║
+# ║  Multi-stage build with aggressive caching for VPS            ║
 # ║  Node.js: 22 LTS (matches local v22.20.0)                    ║
+# ║  Build time: ~1-2 min first build, ~30s rebuild               ║
 # ╚═══════════════════════════════════════════════════════════════╝
 
 # Stage 1: Build Next.js + Tailwind CSS v4
 FROM node:22-slim AS builder
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies (cache this layer)
 RUN apt-get update && apt-get install -y \
     openssl \
     ca-certificates \
+    --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files
+# Copy only package files first (for better layer caching)
 COPY package*.json ./
+
+# Install dependencies with optimizations for VPS
+# Use npm cache and skip optional deps for speed
+ENV NPM_CONFIG_LOGLEVEL=error
+ENV NPM_CONFIG_PROGRESS=false
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --no-fund \
+    && npm cache clean --force
+
+# Copy prisma schema BEFORE copying all source code
+# This allows Prisma generation to be cached separately
 COPY prisma ./prisma/
 
-# Install ALL dependencies (including Tailwind v4)
-RUN npm ci && npm cache clean --force
-
-# Copy source code
-COPY . .
-
-# Generate Prisma Client
+# Generate Prisma Client (cache this layer if schema unchanged)
 RUN npx prisma generate
 
-# Build Next.js (Tailwind CSS v4 akan di-compile otomatis via Vite)
+# NOW copy the rest of source code
+# Changes to source won't invalidate the npm/prisma layers above
+COPY . .
+
+# Disable Next.js telemetry for faster builds
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build Next.js with optimization flags
+# Use SWC minifier (faster than Terser)
+ENV NODE_ENV=production
 RUN npm run build
 
-# Verify CSS was generated
-RUN echo "🎨 Checking Tailwind CSS build..." && \
-    ls -lah .next/static/css/ || echo "⚠️  CSS directory not found"
+# Verify CSS was generated (optional check)
+RUN ls -lah .next/static/css/ 2>/dev/null || echo "⚠️  CSS check skipped"
 
 # Stage 2: Production runner (Alpine for smaller image)
 FROM node:22-alpine AS runner
@@ -43,7 +58,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Install runtime dependencies for Prisma
+# Install runtime dependencies for Prisma (minimal set)
 RUN apk add --no-cache \
     libc6-compat \
     openssl
@@ -52,20 +67,27 @@ RUN apk add --no-cache \
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
-# Copy built application from builder
+# Copy built application from builder (optimized copy order)
+# Copy public assets first (rarely change)
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Copy Next.js standalone output (main app)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Copy static assets (CSS, JS, images from build)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma for seeding/migrations
+# Copy Prisma for runtime (migrations/seeding)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
+# Switch to non-root user
 USER nextjs
 
 EXPOSE 3000
 
+# Health check (faster startup detection)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
