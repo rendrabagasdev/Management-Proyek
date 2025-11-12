@@ -160,9 +160,9 @@ EOF
         read -p "Press Enter when done..."
     fi
     
-    # Install dependencies
+    # Install dependencies (include devDependencies for Tailwind CSS build)
     info "Installing Node.js dependencies..."
-    npm ci --production
+    npm ci
     
     # Generate Prisma Client
     info "Generating Prisma Client..."
@@ -379,7 +379,7 @@ main_menu() {
         3)
             info "Updating application..."
             git pull
-            npm ci --production
+            npm ci
             npx prisma generate
             npx prisma migrate deploy
             npm run build
