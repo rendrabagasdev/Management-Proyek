@@ -162,6 +162,17 @@ export default function CardDetail({
   const [loading, setLoading] = useState(false);
   const [subtaskTitle, setSubtaskTitle] = useState("");
   const [currentTime, setCurrentTime] = useState(0);
+  const [workHoursStatus, setWorkHoursStatus] = useState<{
+    hoursWorked: number;
+    minHours: number;
+    maxHours: number;
+    enableLimit: boolean;
+    status: "ok" | "warning" | "error" | "exceeded";
+    message: string;
+    canStartTimer: boolean;
+    remainingHours: number;
+    neededHours: number;
+  } | null>(null);
 
   // Sync state when initialCard changes (e.g., after refresh)
   useEffect(() => {
@@ -241,6 +252,27 @@ export default function CardDetail({
 
   // Total time = completed + current running (both in seconds)
   const totalTime = completedTime + currentTime;
+
+  // Fetch work hours status
+  useEffect(() => {
+    const fetchWorkHoursStatus = async () => {
+      try {
+        const response = await fetch("/api/time-logs/work-hours-status");
+        if (response.ok) {
+          const data = await response.json();
+          setWorkHoursStatus(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch work hours status:", error);
+      }
+    };
+
+    fetchWorkHoursStatus();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchWorkHoursStatus, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Calculate subtask progress
   const completedSubtasks = (card.subtasks || []).filter(
@@ -430,7 +462,31 @@ export default function CardDetail({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ timeLogId: activeTimer.id }),
         });
+
+        // Refresh work hours status after stopping timer
+        try {
+          const response = await fetch("/api/time-logs/work-hours-status");
+          if (response.ok) {
+            const data = await response.json();
+            setWorkHoursStatus(data);
+          }
+        } catch (error) {
+          console.error("Failed to refresh work hours status:", error);
+        }
       } else {
+        // Check if user can start timer (work hours limit)
+        if (workHoursStatus && !workHoursStatus.canStartTimer) {
+          setModalState({
+            isOpen: true,
+            type: "error",
+            message:
+              workHoursStatus.message ||
+              "Cannot start timer: work hours limit reached",
+          });
+          setLoading(false);
+          return;
+        }
+
         // Start timer
         const postResp = await fetch(`/api/cards/${card.id}/time`, {
           method: "POST",
@@ -1034,6 +1090,165 @@ export default function CardDetail({
                 </div>
               </CardContent>
             </Card>
+
+            {/* Work Hours Status */}
+            {workHoursStatus && workHoursStatus.enableLimit && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    Today&apos;s Work Hours
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Hours Progress */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">
+                        Hours Worked:
+                      </span>
+                      <Badge
+                        variant={
+                          workHoursStatus.status === "exceeded"
+                            ? "destructive"
+                            : workHoursStatus.status === "warning"
+                            ? "outline"
+                            : "default"
+                        }
+                        className={
+                          workHoursStatus.status === "ok"
+                            ? "bg-green-500 hover:bg-green-600"
+                            : workHoursStatus.status === "warning"
+                            ? "border-amber-500 text-amber-600"
+                            : ""
+                        }
+                      >
+                        {workHoursStatus.hoursWorked.toFixed(1)}h /{" "}
+                        {workHoursStatus.maxHours}h
+                      </Badge>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
+                      <div
+                        className={`h-full transition-all duration-300 ${
+                          workHoursStatus.status === "exceeded"
+                            ? "bg-red-500"
+                            : workHoursStatus.status === "warning"
+                            ? "bg-amber-500"
+                            : "bg-green-500"
+                        }`}
+                        style={{
+                          width: `${Math.min(
+                            (workHoursStatus.hoursWorked /
+                              workHoursStatus.maxHours) *
+                              100,
+                            100
+                          )}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Status Messages */}
+                  <div className="space-y-2 text-sm">
+                    {workHoursStatus.status === "warning" && (
+                      <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-md">
+                        <span className="text-amber-600 dark:text-amber-400 text-lg">
+                          ⚠️
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-amber-800 dark:text-amber-200 font-medium">
+                            Below Minimum
+                          </p>
+                          <p className="text-amber-700 dark:text-amber-300 text-xs mt-1">
+                            Need{" "}
+                            <strong>
+                              {workHoursStatus.neededHours.toFixed(1)}h
+                            </strong>{" "}
+                            more to reach minimum ({workHoursStatus.minHours}h)
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {workHoursStatus.status === "ok" && (
+                      <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-md">
+                        <span className="text-green-600 dark:text-green-400 text-lg">
+                          ✓
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-green-800 dark:text-green-200 font-medium">
+                            On Track
+                          </p>
+                          <p className="text-green-700 dark:text-green-300 text-xs mt-1">
+                            <strong>
+                              {workHoursStatus.remainingHours.toFixed(1)}h
+                            </strong>{" "}
+                            remaining before reaching limit
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {workHoursStatus.status === "exceeded" && (
+                      <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+                        <span className="text-red-600 dark:text-red-400 text-lg">
+                          🚫
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-red-800 dark:text-red-200 font-medium">
+                            Maximum Reached
+                          </p>
+                          <p className="text-red-700 dark:text-red-300 text-xs mt-1">
+                            Cannot start new timer today. Maximum{" "}
+                            {workHoursStatus.maxHours}h limit reached.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {workHoursStatus.status === "error" && (
+                      <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-md">
+                        <span className="text-red-600 dark:text-red-400 text-lg">
+                          ⛔
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-red-800 dark:text-red-200 font-medium">
+                            Over Limit
+                          </p>
+                          <p className="text-red-700 dark:text-red-300 text-xs mt-1">
+                            Exceeded maximum by{" "}
+                            <strong>
+                              {(
+                                workHoursStatus.hoursWorked -
+                                workHoursStatus.maxHours
+                              ).toFixed(1)}
+                              h
+                            </strong>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Limits Summary */}
+                  <div className="pt-3 border-t space-y-1 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Minimum Required:</span>
+                      <span className="font-medium">
+                        {workHoursStatus.minHours}h
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Maximum Allowed:</span>
+                      <span className="font-medium">
+                        {workHoursStatus.maxHours}h
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Actions */}
             {(canEdit || isAssignedMember) && (
