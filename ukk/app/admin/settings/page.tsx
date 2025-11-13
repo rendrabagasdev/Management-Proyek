@@ -21,6 +21,7 @@ import {
   FaImage,
   FaToggleOn,
   FaInfoCircle,
+  FaClock,
 } from "react-icons/fa";
 import { useToast } from "@/hooks/use-toast";
 
@@ -118,6 +119,11 @@ interface Settings {
   feature_time_tracking?: string;
   feature_comments?: string;
   feature_subtasks?: string;
+
+  // Time Tracking
+  min_work_hours_per_day?: string;
+  max_work_hours_per_day?: string;
+  enable_work_hours_limit?: string;
 
   // General
   max_upload_size_mb?: string;
@@ -220,38 +226,52 @@ export default function AdminSettingsPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Global Settings</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">Global Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Configure application-wide settings and appearance
           </p>
         </div>
-        <Button onClick={handleSave} disabled={saving}>
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          size="sm"
+          className="w-full sm:w-auto"
+        >
           <FaSave className="mr-2" />
           {saving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
 
       <Tabs defaultValue="branding" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="branding">
-            <FaImage className="mr-2" />
-            Branding
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
+          <TabsTrigger value="branding" className="text-xs sm:text-sm">
+            <FaImage className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Branding</span>
+            <span className="sm:hidden">Brand</span>
           </TabsTrigger>
-          <TabsTrigger value="appearance">
-            <FaPalette className="mr-2" />
-            Appearance
+          <TabsTrigger value="appearance" className="text-xs sm:text-sm">
+            <FaPalette className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Appearance</span>
+            <span className="sm:hidden">Theme</span>
           </TabsTrigger>
-          <TabsTrigger value="features">
-            <FaToggleOn className="mr-2" />
-            Features
+          <TabsTrigger value="features" className="text-xs sm:text-sm">
+            <FaToggleOn className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Features</span>
+            <span className="sm:hidden">Features</span>
           </TabsTrigger>
-          <TabsTrigger value="general">
-            <FaCog className="mr-2" />
-            General
+          <TabsTrigger value="time-tracking" className="text-xs sm:text-sm">
+            <FaClock className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Time Tracking</span>
+            <span className="sm:hidden">Time</span>
+          </TabsTrigger>
+          <TabsTrigger value="general" className="text-xs sm:text-sm">
+            <FaCog className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">General</span>
+            <span className="sm:hidden">General</span>
           </TabsTrigger>
         </TabsList>
 
@@ -339,45 +359,45 @@ export default function AdminSettingsPage() {
               {/* Color Packs Section */}
               <div className="space-y-4">
                 <div>
-                  <Label className="text-base font-semibold">
+                  <Label className="text-sm sm:text-base font-semibold">
                     Color Packs / Paket Warna
                   </Label>
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Pilih tema warna siap pakai atau customize sendiri di bawah
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                   {COLOR_PACKS.map((pack) => (
                     <button
                       key={pack.id}
                       onClick={() => applyColorPack(pack.id)}
-                      className={`p-4 border-2 rounded-lg text-left transition-all hover:shadow-lg hover:scale-105 ${
+                      className={`p-3 sm:p-4 border-2 rounded-lg text-left transition-all hover:shadow-lg hover:scale-105 ${
                         selectedPack === pack.id
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                     >
                       <div
-                        className={`h-20 rounded-md mb-3 ${pack.preview}`}
+                        className={`h-16 sm:h-20 rounded-md mb-2 sm:mb-3 ${pack.preview}`}
                       ></div>
-                      <h3 className="font-semibold text-sm mb-1">
+                      <h3 className="font-semibold text-xs sm:text-sm mb-1">
                         {pack.name}
                       </h3>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1">
                         {pack.description}
                       </p>
                       <div className="flex gap-1 mt-2">
                         <div
-                          className="w-6 h-6 rounded border"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded border"
                           style={{ backgroundColor: pack.primary }}
                         />
                         <div
-                          className="w-6 h-6 rounded border"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded border"
                           style={{ backgroundColor: pack.secondary }}
                         />
                         <div
-                          className="w-6 h-6 rounded border"
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded border"
                           style={{ backgroundColor: pack.accent }}
                         />
                       </div>
@@ -398,9 +418,11 @@ export default function AdminSettingsPage() {
               </div>
 
               {/* Manual Color Customization */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="theme_primary_color">Primary Color</Label>
+                  <Label htmlFor="theme_primary_color" className="text-sm">
+                    Primary Color
+                  </Label>
                   <div className="flex gap-2">
                     <Input
                       id="theme_primary_color"
@@ -409,7 +431,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) =>
                         updateSetting("theme_primary_color", e.target.value)
                       }
-                      className="w-20 h-10"
+                      className="w-16 sm:w-20 h-10"
                     />
                     <Input
                       value={settings.theme_primary_color || "#3b82f6"}
@@ -417,13 +439,15 @@ export default function AdminSettingsPage() {
                         updateSetting("theme_primary_color", e.target.value)
                       }
                       placeholder="#3b82f6"
-                      className="flex-1"
+                      className="flex-1 text-sm"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="theme_secondary_color">Secondary Color</Label>
+                  <Label htmlFor="theme_secondary_color" className="text-sm">
+                    Secondary Color
+                  </Label>
                   <div className="flex gap-2">
                     <Input
                       id="theme_secondary_color"
@@ -432,7 +456,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) =>
                         updateSetting("theme_secondary_color", e.target.value)
                       }
-                      className="w-20 h-10"
+                      className="w-16 sm:w-20 h-10"
                     />
                     <Input
                       value={settings.theme_secondary_color || "#8b5cf6"}
@@ -440,13 +464,15 @@ export default function AdminSettingsPage() {
                         updateSetting("theme_secondary_color", e.target.value)
                       }
                       placeholder="#8b5cf6"
-                      className="flex-1"
+                      className="flex-1 text-sm"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="theme_accent_color">Accent Color</Label>
+                  <Label htmlFor="theme_accent_color" className="text-sm">
+                    Accent Color
+                  </Label>
                   <div className="flex gap-2">
                     <Input
                       id="theme_accent_color"
@@ -455,7 +481,7 @@ export default function AdminSettingsPage() {
                       onChange={(e) =>
                         updateSetting("theme_accent_color", e.target.value)
                       }
-                      className="w-20 h-10"
+                      className="w-16 sm:w-20 h-10"
                     />
                     <Input
                       value={settings.theme_accent_color || "#f59e0b"}
@@ -463,7 +489,7 @@ export default function AdminSettingsPage() {
                         updateSetting("theme_accent_color", e.target.value)
                       }
                       placeholder="#f59e0b"
-                      className="flex-1"
+                      className="flex-1 text-sm"
                     />
                   </div>
                 </div>
@@ -488,28 +514,28 @@ export default function AdminSettingsPage() {
                 </p>
               </div>
 
-              <div className="p-4 bg-muted rounded-lg">
+              <div className="p-3 sm:p-4 bg-muted rounded-lg">
                 <div className="flex items-start gap-2">
-                  <FaInfoCircle className="text-(--theme-primary) mt-0.5" />
-                  <div className="text-sm text-muted-foreground">
+                  <FaInfoCircle className="text-(--theme-primary) mt-0.5 shrink-0" />
+                  <div className="text-xs sm:text-sm text-muted-foreground">
                     <p className="font-medium mb-1">Color Preview</p>
                     <div className="flex gap-2 mt-2">
                       <div
-                        className="w-12 h-12 rounded border"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded border"
                         style={{
                           backgroundColor:
                             settings.theme_primary_color || "#3b82f6",
                         }}
                       />
                       <div
-                        className="w-12 h-12 rounded border"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded border"
                         style={{
                           backgroundColor:
                             settings.theme_secondary_color || "#8b5cf6",
                         }}
                       />
                       <div
-                        className="w-12 h-12 rounded border"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded border"
                         style={{
                           backgroundColor:
                             settings.theme_accent_color || "#f59e0b",
@@ -534,10 +560,12 @@ export default function AdminSettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label>Real-time Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <Label className="text-sm sm:text-base">
+                      Real-time Notifications
+                    </Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Enable push notifications via Pusher
                     </p>
                   </div>
@@ -550,14 +578,16 @@ export default function AdminSettingsPage() {
                         String(e.target.checked)
                       )
                     }
-                    className="w-4 h-4"
+                    className="w-5 h-5 shrink-0"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label>Time Tracking</Label>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <Label className="text-sm sm:text-base">
+                      Time Tracking
+                    </Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Allow users to log time on cards
                     </p>
                   </div>
@@ -570,14 +600,14 @@ export default function AdminSettingsPage() {
                         String(e.target.checked)
                       )
                     }
-                    className="w-4 h-4"
+                    className="w-5 h-5 shrink-0"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label>Comments</Label>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <Label className="text-sm sm:text-base">Comments</Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Enable commenting on cards
                     </p>
                   </div>
@@ -590,14 +620,14 @@ export default function AdminSettingsPage() {
                         String(e.target.checked)
                       )
                     }
-                    className="w-4 h-4"
+                    className="w-5 h-5 shrink-0"
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <Label>Subtasks</Label>
-                    <p className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <Label className="text-sm sm:text-base">Subtasks</Label>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Allow creating subtasks within cards
                     </p>
                   </div>
@@ -610,8 +640,138 @@ export default function AdminSettingsPage() {
                         String(e.target.checked)
                       )
                     }
-                    className="w-4 h-4"
+                    className="w-5 h-5 shrink-0"
                   />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Time Tracking Tab */}
+        <TabsContent value="time-tracking">
+          <Card>
+            <CardHeader>
+              <CardTitle>Time Tracking Settings</CardTitle>
+              <CardDescription>
+                Configure work hours limits and requirements
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <FaInfoCircle className="text-amber-600 dark:text-amber-500 mt-0.5 shrink-0" />
+                  <div className="text-xs sm:text-sm text-amber-800 dark:text-amber-200">
+                    <p className="font-medium mb-1">
+                      Work Hours Limit Information
+                    </p>
+                    <p>
+                      Set minimum and maximum work hours per day to ensure
+                      healthy work-life balance. Users will receive warnings if
+                      they work too little, and will be prevented from starting
+                      timer if they reach maximum hours.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border rounded-lg">
+                <div className="flex-1">
+                  <Label className="text-sm sm:text-base">
+                    Enable Work Hours Limit
+                  </Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Enforce minimum and maximum work hours per day
+                  </p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.enable_work_hours_limit === "true"}
+                  onChange={(e) =>
+                    updateSetting(
+                      "enable_work_hours_limit",
+                      String(e.target.checked)
+                    )
+                  }
+                  className="w-5 h-5 shrink-0"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="min_work_hours_per_day">
+                  Minimum Work Hours Per Day
+                </Label>
+                <Input
+                  id="min_work_hours_per_day"
+                  type="number"
+                  min="1"
+                  max="12"
+                  step="0.5"
+                  value={settings.min_work_hours_per_day || "4"}
+                  onChange={(e) =>
+                    updateSetting("min_work_hours_per_day", e.target.value)
+                  }
+                  placeholder="4"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Users will receive a warning if they work less than this
+                  amount per day. Recommended: 4-6 hours.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="max_work_hours_per_day">
+                  Maximum Work Hours Per Day
+                </Label>
+                <Input
+                  id="max_work_hours_per_day"
+                  type="number"
+                  min="8"
+                  max="24"
+                  step="0.5"
+                  value={settings.max_work_hours_per_day || "12"}
+                  onChange={(e) =>
+                    updateSetting("max_work_hours_per_day", e.target.value)
+                  }
+                  placeholder="12"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Users will be blocked from starting new timer if they reach
+                  this limit. Recommended: 10-12 hours.
+                </p>
+              </div>
+
+              <div className="p-3 sm:p-4 bg-muted rounded-lg space-y-2">
+                <p className="text-xs sm:text-sm font-medium">
+                  Current Configuration:
+                </p>
+                <div className="text-xs sm:text-sm text-muted-foreground space-y-1">
+                  <p>
+                    • Minimum:{" "}
+                    <span className="font-medium text-foreground">
+                      {settings.min_work_hours_per_day || "4"} hours/day
+                    </span>
+                  </p>
+                  <p>
+                    • Maximum:{" "}
+                    <span className="font-medium text-foreground">
+                      {settings.max_work_hours_per_day || "12"} hours/day
+                    </span>
+                  </p>
+                  <p>
+                    • Status:{" "}
+                    <span
+                      className={`font-medium ${
+                        settings.enable_work_hours_limit === "true"
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-amber-600 dark:text-amber-400"
+                      }`}
+                    >
+                      {settings.enable_work_hours_limit === "true"
+                        ? "Enabled ✓"
+                        : "Disabled"}
+                    </span>
+                  </p>
                 </div>
               </div>
             </CardContent>

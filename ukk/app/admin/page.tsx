@@ -187,21 +187,26 @@ export default async function AdminOverviewPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Admin Panel</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl lg:text-3xl font-bold">Admin Panel</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">
             System overview and management tools
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+          >
             <Link href="/admin/settings">
               <FaCog className="mr-2" />
               Settings
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild size="sm" className="w-full sm:w-auto">
             <Link href="/admin/users">
               <FaUserCog className="mr-2" />
               Manage Users
@@ -573,42 +578,50 @@ export default async function AdminOverviewPage() {
                 href={`/cards/${card.id}`}
                 className="block p-3 border rounded-lg hover:bg-muted/50 transition"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-sm">{card.title}</h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                      <span>{card.board.project.name}</span>
-                      <span>•</span>
-                      <span>{card.board.name}</span>
-                      <span>•</span>
-                      <span>by {card.creator.name}</span>
-                      <span>•</span>
-                      <span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">
+                      {card.title}
+                    </h3>
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-xs text-muted-foreground mt-1">
+                      <span className="truncate max-w-[200px]">
+                        {card.board.project.name}
+                      </span>
+                      <span className="hidden sm:inline">•</span>
+                      <span className="hidden sm:inline">
+                        {card.board.name}
+                      </span>
+                      <span className="hidden md:inline">•</span>
+                      <span className="hidden md:inline">
+                        by {card.creator.name}
+                      </span>
+                      <span className="sm:hidden md:inline">•</span>
+                      <span className="text-[10px] sm:text-xs">
                         {new Date(card.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5 sm:gap-2 shrink-0">
                     <Badge
                       variant={card.status === "DONE" ? "default" : "secondary"}
-                      className={
+                      className={`text-[10px] sm:text-xs ${
                         card.status === "TODO"
                           ? "bg-muted text-muted-foreground"
                           : card.status === "IN_PROGRESS"
                           ? "bg-(--theme-primary)/10 text-(--theme-primary)"
                           : card.status === "REVIEW"
-                          ? "bg-(--theme-warning)pacity-10 text-(--theme-warning)"
+                          ? "bg-(--theme-warning)/10 text-(--theme-warning)"
                           : "bg-(--theme-success)/10 text-(--theme-success)"
-                      }
+                      }`}
                     >
                       {card.status.replace("_", " ")}
                     </Badge>
                     <Badge
-                      className={`text-xs ${
+                      className={`text-[10px] sm:text-xs ${
                         card.priority === "HIGH"
-                          ? "bg-(--theme-danger)pacity-10 text-(--theme-danger)er-(--theme-danger) border-opacity-30"
+                          ? "bg-(--theme-danger)/10 text-(--theme-danger) border-(--theme-danger) border-opacity-30"
                           : card.priority === "MEDIUM"
-                          ? "bg-(--theme-warning)pacity-10 text-(--theme-warning) border-(--theme-warning) border-opacity-30"
+                          ? "bg-(--theme-warning)/10 text-(--theme-warning) border-(--theme-warning) border-opacity-30"
                           : "bg-(--theme-primary)/10 text-(--theme-primary) border-(--theme-primary) border-opacity-30"
                       }`}
                       variant="outline"

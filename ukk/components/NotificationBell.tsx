@@ -182,17 +182,17 @@ export function NotificationBell() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-80 max-h-96 overflow-y-auto"
+        className="w-[90vw] sm:w-96 max-h-[80vh] sm:max-h-96 overflow-y-auto"
       >
-        <DropdownMenuLabel className="flex justify-between items-center">
-          <span>Notifications</span>
+        <DropdownMenuLabel className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <span className="text-sm sm:text-base">Notifications</span>
           {unreadCount > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
               disabled={loading}
-              className="text-xs h-6"
+              className="text-xs h-7 w-full sm:w-auto"
             >
               <FaCheck className="mr-1 w-3 h-3" />
               Mark all read
@@ -276,36 +276,36 @@ function NotificationItem({
 }: NotificationItemProps) {
   const content = (
     <div
-      className={`relative group px-2 py-3 hover:bg-muted/50 cursor-pointer ${
-        !notification.isRead ? "bg-(--theme-primary) bg-opacity-5" : ""
+      className={`relative group px-3 py-2.5 hover:bg-muted/50 cursor-pointer ${
+        !notification.isRead ? "bg-primary/5 border-l-2 border-primary" : ""
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold truncate">
+          <div className="flex items-center gap-1.5">
+            <h4 className="text-xs sm:text-sm font-semibold line-clamp-1">
               {notification.title}
             </h4>
             {!notification.isRead && (
-              <span className="w-2 h-2 bg-(--theme-primary) rounded-full shrink-0" />
+              <span className="w-2 h-2 bg-primary rounded-full shrink-0" />
             )}
           </div>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 line-clamp-2">
             {notification.message}
           </p>
-          <span className="text-xs text-muted-foreground mt-1 block">
+          <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 block">
             {formatDistanceToNow(new Date(notification.createdAt), {
               addSuffix: true,
             })}
           </span>
         </div>
 
-        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
           {!notification.isRead && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0"
+              className="h-7 w-7 p-0"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -319,7 +319,7 @@ function NotificationItem({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-(--theme-danger) hover:text-(--theme-danger-dark)"
+            className="h-7 w-7 p-0 text-destructive hover:text-destructive/80"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

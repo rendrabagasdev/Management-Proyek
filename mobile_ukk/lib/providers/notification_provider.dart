@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:mobile_ukk/services/api_service.dart';
-import 'package:mobile_ukk/services/pusher_service.dart';
+import 'package:mobile_ukk/services/firebase_service.dart';
 import 'dart:developer' as developer;
 
 class NotificationModel {
@@ -74,7 +74,7 @@ class NotificationState {
 
 class NotificationNotifier extends Notifier<NotificationState> {
   final ApiService _apiService = ApiService();
-  final PusherService _pusherService = PusherService();
+  final FirebaseService _firebaseService = FirebaseService();
 
   int? _subscribedUserId;
 
@@ -212,45 +212,80 @@ class NotificationNotifier extends Notifier<NotificationState> {
     }
   }
 
-  // Subscribe to real-time notifications
-  void subscribeToNotifications(int userId) {
+  // Subscribe to real-time notifications via Firebase
+  Future<void> subscribeToNotifications(int userId) async {
     if (_subscribedUserId == userId) return; // Already subscribed
 
-    final channelName = 'user-$userId';
-    _pusherService.subscribeToChannel(channelName);
-    _pusherService.bindEvent(channelName, 'notification:new', (data) {
+    try {
+      // Initialize Firebase if needed
+      await _firebaseService.initialize();
+
+      // Subscribe to user's notification path in Firebase
+      final path = 'users/$userId/events';
+      await _firebaseService.subscribeToPath(path);
+
+      // Bind event handler for new notifications
+      _firebaseService.bindEvent(path, 'notification:new', (data) {
+        developer.log(
+          '📬 New notification received: $data',
+          name: 'NotificationProvider',
+        );
+
+        if (data != null && data is Map) {
+          try {
+            final notificationData = data['notification'];
+            if (notificationData != null) {
+              final notification = NotificationModel.fromJson(
+                Map<String, dynamic>.from(notificationData),
+              );
+              final updatedNotifications = [
+                notification,
+                ...state.notifications,
+              ];
+              state = state.copyWith(
+                notifications: updatedNotifications,
+                unreadCount: state.unreadCount + 1,
+              );
+            }
+          } catch (e) {
+            developer.log(
+              'Error parsing notification: $e',
+              name: 'NotificationProvider',
+            );
+          }
+        }
+      });
+
+      _subscribedUserId = userId;
       developer.log(
-        '📬 New notification received: $data',
+        '✅ Subscribed to notifications for user $userId',
         name: 'NotificationProvider',
       );
-
-      if (data != null && data['notification'] != null) {
-        final notification = NotificationModel.fromJson(data['notification']);
-        final updatedNotifications = [notification, ...state.notifications];
-        state = state.copyWith(
-          notifications: updatedNotifications,
-          unreadCount: state.unreadCount + 1,
-        );
-      }
-    });
-
-    _subscribedUserId = userId;
-    developer.log(
-      '✅ Subscribed to notifications for user $userId',
-      name: 'NotificationProvider',
-    );
+    } catch (e) {
+      developer.log(
+        '❌ Error subscribing to notifications: $e',
+        name: 'NotificationProvider',
+      );
+    }
   }
 
   // Unsubscribe from notifications
-  void unsubscribeFromNotifications() {
+  Future<void> unsubscribeFromNotifications() async {
     if (_subscribedUserId != null) {
-      final channelName = 'user-$_subscribedUserId';
-      _pusherService.unsubscribeFromChannel(channelName);
-      _subscribedUserId = null;
-      developer.log(
-        '❌ Unsubscribed from notifications',
-        name: 'NotificationProvider',
-      );
+      try {
+        final path = 'users/$_subscribedUserId/events';
+        await _firebaseService.unsubscribeFromPath(path);
+        _subscribedUserId = null;
+        developer.log(
+          '❌ Unsubscribed from notifications',
+          name: 'NotificationProvider',
+        );
+      } catch (e) {
+        developer.log(
+          '❌ Error unsubscribing from notifications: $e',
+          name: 'NotificationProvider',
+        );
+      }
     }
   }
 

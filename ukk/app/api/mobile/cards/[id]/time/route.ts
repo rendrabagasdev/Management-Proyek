@@ -91,6 +91,65 @@ export async function POST(
       );
     }
 
+    // Get work hours settings
+    const [maxHoursSetting, enableLimitSetting] = await Promise.all([
+      prisma.appSettings.findUnique({
+        where: { key: "max_work_hours_per_day" },
+      }),
+      prisma.appSettings.findUnique({
+        where: { key: "enable_work_hours_limit" },
+      }),
+    ]);
+
+    const maxHoursPerDay = maxHoursSetting
+      ? parseFloat(maxHoursSetting.value)
+      : 12;
+    const enableLimit =
+      enableLimitSetting?.value === "true" || enableLimitSetting?.value === "1";
+
+    // Check today's total work hours if limit is enabled
+    if (enableLimit) {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date();
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const todayTimeLogs = await prisma.timeLog.findMany({
+        where: {
+          userId,
+          startTime: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+          endTime: {
+            not: null,
+          },
+        },
+      });
+
+      // Calculate total minutes worked today
+      const totalMinutesWorked = todayTimeLogs.reduce(
+        (sum, log) => sum + (log.durationMinutes || 0),
+        0
+      );
+      const hoursWorked = totalMinutesWorked / 60;
+
+      if (hoursWorked >= maxHoursPerDay) {
+        return NextResponse.json(
+          {
+            message: `You have reached the maximum work hours limit (${maxHoursPerDay} hours per day). You have worked ${hoursWorked.toFixed(
+              1
+            )} hours today. Please rest and continue tomorrow.`,
+            code: "MAX_HOURS_EXCEEDED",
+            hoursWorked: hoursWorked.toFixed(2),
+            maxHours: maxHoursPerDay,
+          },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+    }
+
     // Get card to check status
     const card = await prisma.card.findUnique({
       where: { id: cardId },

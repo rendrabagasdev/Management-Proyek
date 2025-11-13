@@ -55,19 +55,20 @@ export default async function AdminUsersPage() {
   });
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/dashboard">
+              <FaArrowLeft className="mr-2" />
+              <span className="hidden sm:inline">Back to Dashboard</span>
+              <span className="sm:hidden">Back</span>
+            </Link>
+          </Button>
+        </div>
         <div>
-          <div className="flex items-center gap-3 mb-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard">
-                <FaArrowLeft className="mr-2" />
-                Back to Dashboard
-              </Link>
-            </Button>
-          </div>
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl font-bold">User Management</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage all users in the system
           </p>
         </div>

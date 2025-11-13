@@ -293,9 +293,9 @@ export default function NewProjectPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
-      <div className="mb-6">
-        <Button variant="outline" asChild>
+    <div className="container mx-auto p-4 sm:p-6 max-w-2xl">
+      <div className="mb-4 sm:mb-6">
+        <Button variant="outline" asChild size="sm">
           <Link href="/projects">
             <FaArrowLeft className="mr-2" />
             Back to Projects
@@ -305,16 +305,18 @@ export default function NewProjectPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Create New Project</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl sm:text-2xl">
+            Create New Project
+          </CardTitle>
+          <CardDescription className="text-sm">
             Start a new project for your team to collaborate on tasks and track
             progress.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger)er-opacity-30 text-text-(--theme-danger) py-3 rounded">
+              <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) p-3 rounded text-sm">
                 {error}
               </div>
             )}
@@ -420,7 +422,7 @@ export default function NewProjectPage() {
               </div>
 
               {/* Add Member Form */}
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <select
                   value={selectedUserId}
                   onChange={(e) => setSelectedUserId(e.target.value)}
@@ -440,45 +442,49 @@ export default function NewProjectPage() {
                     ))}
                 </select>
 
-                <select
-                  value={selectedRole}
-                  onChange={(e) =>
-                    setSelectedRole(
-                      e.target.value as
-                        | "LEADER"
-                        | "DEVELOPER"
-                        | "DESIGNER"
-                        | "OBSERVER"
-                    )
-                  }
-                  className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  disabled={loading}
-                >
-                  <option
-                    value="LEADER"
-                    disabled={
-                      currentUserRole === "LEADER" ||
-                      teamMembers.some((m) => m.projectRole === "LEADER") ||
-                      (!!selectedUserId &&
-                        users.find((u) => u.id === parseInt(selectedUserId))
-                          ?.globalRole !== "LEADER")
+                <div className="flex gap-2">
+                  <select
+                    value={selectedRole}
+                    onChange={(e) =>
+                      setSelectedRole(
+                        e.target.value as
+                          | "LEADER"
+                          | "DEVELOPER"
+                          | "DESIGNER"
+                          | "OBSERVER"
+                      )
                     }
+                    className="flex-1 sm:w-32 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    disabled={loading}
                   >
-                    Leader
-                  </option>
-                  <option value="DEVELOPER">Developer</option>
-                  <option value="DESIGNER">Designer</option>
-                  <option value="OBSERVER">Observer</option>
-                </select>
+                    <option
+                      value="LEADER"
+                      disabled={
+                        currentUserRole === "LEADER" ||
+                        teamMembers.some((m) => m.projectRole === "LEADER") ||
+                        (!!selectedUserId &&
+                          users.find((u) => u.id === parseInt(selectedUserId))
+                            ?.globalRole !== "LEADER")
+                      }
+                    >
+                      Leader
+                    </option>
+                    <option value="DEVELOPER">Developer</option>
+                    <option value="DESIGNER">Designer</option>
+                    <option value="OBSERVER">Observer</option>
+                  </select>
 
-                <Button
-                  type="button"
-                  onClick={addTeamMember}
-                  disabled={!selectedUserId || loading}
-                  variant="outline"
-                >
-                  Add
-                </Button>
+                  <Button
+                    type="button"
+                    onClick={addTeamMember}
+                    disabled={!selectedUserId || loading}
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    Add
+                  </Button>
+                </div>
               </div>
 
               {/* Team Members List */}
@@ -491,16 +497,18 @@ export default function NewProjectPage() {
                     return (
                       <div
                         key={member.userId}
-                        className="flex items-center justify-between p-3 border rounded-lg bg-card"
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg bg-card"
                       >
-                        <div className="flex-1">
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm sm:text-base truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {user.email} • Global Role: {user.globalRole}
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 shrink-0">
                           <select
                             value={member.projectRole}
                             onChange={(e) =>
@@ -513,7 +521,7 @@ export default function NewProjectPage() {
                                   | "OBSERVER"
                               )
                             }
-                            className="rounded-md border border-input bg-background px-3 py-1 text-sm"
+                            className="flex-1 sm:flex-none rounded-md border border-input bg-background px-2 sm:px-3 py-1 text-xs sm:text-sm"
                             disabled={loading}
                           >
                             <option
@@ -534,7 +542,11 @@ export default function NewProjectPage() {
                             <option value="OBSERVER">Observer</option>
                           </select>
 
-                          <Badge className={getRoleColor(member.projectRole)}>
+                          <Badge
+                            className={`text-xs ${getRoleColor(
+                              member.projectRole
+                            )}`}
+                          >
                             {member.projectRole}
                           </Badge>
 
@@ -544,8 +556,9 @@ export default function NewProjectPage() {
                             size="sm"
                             onClick={() => removeTeamMember(member.userId)}
                             disabled={loading}
+                            className="shrink-0"
                           >
-                            <FaTimes className="h-4 w-4" />
+                            <FaTimes className="h-3 w-3 sm:h-4 sm:w-4" />
                           </Button>
                         </div>
                       </div>
@@ -570,11 +583,11 @@ export default function NewProjectPage() {
               )}
             </div>
 
-            <div className="bg-(--theme-info) bg-opacity-10 border border-(--theme-info) border-opacity-30 p-4 rounded">
-              <h4 className="font-medium text-(--theme-info) mb-2">
+            <div className="bg-(--theme-info) bg-opacity-10 border border-(--theme-info) border-opacity-30 p-3 sm:p-4 rounded">
+              <h4 className="font-medium text-(--theme-info) mb-2 text-sm sm:text-base">
                 What happens next?
               </h4>
-              <ul className="text-sm text-(--theme-info) space-y-1 list-disc list-inside">
+              <ul className="text-xs sm:text-sm text-(--theme-info) space-y-1 list-disc list-inside">
                 <li>Selected team members will be added to the project</li>
                 <li>
                   4 default boards will be created (To Do, In Progress, Review,
@@ -584,8 +597,13 @@ export default function NewProjectPage() {
               </ul>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button type="submit" disabled={loading} className="flex-1">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1"
+                size="sm"
+              >
                 <FaSave className="mr-2" />
                 {loading ? "Creating..." : "Create Project"}
               </Button>
@@ -594,6 +612,8 @@ export default function NewProjectPage() {
                 variant="outline"
                 onClick={() => router.back()}
                 disabled={loading}
+                size="sm"
+                className="sm:w-auto"
               >
                 Cancel
               </Button>

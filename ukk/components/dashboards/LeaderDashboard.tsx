@@ -106,8 +106,10 @@ export function LeaderDashboard({ projects }: LeaderDashboardProps) {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Leader Dashboard</h1>
-        <p className="text-muted-foreground">Manage your projects and team</p>
+        <h1 className="text-2xl lg:text-3xl font-bold">Leader Dashboard</h1>
+        <p className="text-sm lg:text-base text-muted-foreground">
+          Manage your projects and team
+        </p>
       </div>
 
       {/* Stats */}

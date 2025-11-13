@@ -692,6 +692,26 @@ async function main() {
         category: "features",
         description: "Enable time tracking feature",
       },
+      {
+        key: "min_work_hours_per_day",
+        value: "4",
+        category: "time_tracking",
+        description:
+          "Minimum required work hours per day (will show warning if less)",
+      },
+      {
+        key: "max_work_hours_per_day",
+        value: "12",
+        category: "time_tracking",
+        description:
+          "Maximum allowed work hours per day (prevents starting timer if exceeded)",
+      },
+      {
+        key: "enable_work_hours_limit",
+        value: "true",
+        category: "time_tracking",
+        description: "Enable work hours limit enforcement",
+      },
     ],
   });
 

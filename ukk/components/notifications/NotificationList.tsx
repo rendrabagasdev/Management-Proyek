@@ -134,26 +134,28 @@ export function NotificationList({
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Actions Bar */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <CardContent className="py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-2">
               <Button
                 variant={filter === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilter("all")}
+                className="text-xs sm:text-sm"
               >
-                <FaFilter className="mr-2" />
+                <FaFilter className="mr-1 sm:mr-2 h-3 w-3" />
                 All ({notifications.length})
               </Button>
               <Button
                 variant={filter === "unread" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilter("unread")}
+                className="text-xs sm:text-sm"
               >
-                <FaFilter className="mr-2" />
+                <FaFilter className="mr-1 sm:mr-2 h-3 w-3" />
                 Unread ({unreadCount})
               </Button>
             </div>
@@ -165,9 +167,11 @@ export function NotificationList({
                   size="sm"
                   onClick={markAllAsRead}
                   disabled={loading}
+                  className="flex-1 sm:flex-none text-xs sm:text-sm"
                 >
-                  <FaCheckDouble className="mr-2" />
-                  Mark All Read
+                  <FaCheckDouble className="mr-1 sm:mr-2 h-3 w-3" />
+                  <span className="hidden sm:inline">Mark All Read</span>
+                  <span className="sm:hidden">All Read</span>
                 </Button>
               )}
               {notifications.some((n) => n.isRead) && (
@@ -176,10 +180,11 @@ export function NotificationList({
                   size="sm"
                   onClick={deleteAllRead}
                   disabled={loading}
-                  className="text-(--theme-danger) hover:text-(--theme-danger-dark)"
+                  className="flex-1 sm:flex-none text-(--theme-danger) hover:text-(--theme-danger-dark) text-xs sm:text-sm"
                 >
-                  <FaBroom className="mr-2" />
-                  Clear Read
+                  <FaBroom className="mr-1 sm:mr-2 h-3 w-3" />
+                  <span className="hidden sm:inline">Clear Read</span>
+                  <span className="sm:hidden">Clear</span>
                 </Button>
               )}
             </div>
@@ -188,13 +193,15 @@ export function NotificationList({
       </Card>
 
       {/* Notifications List */}
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {filteredNotifications.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <div className="text-6xl mb-4">🎉</div>
-              <p className="text-lg font-semibold mb-2">All caught up!</p>
-              <p className="text-muted-foreground">
+            <CardContent className="py-8 sm:py-12 text-center">
+              <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🎉</div>
+              <p className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">
+                All caught up!
+              </p>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {filter === "unread"
                   ? "You have no unread notifications"
                   : "You have no notifications"}
@@ -211,37 +218,42 @@ export function NotificationList({
                   : ""
               }`}
             >
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start gap-2 sm:gap-4">
                   {/* Icon */}
-                  <div className="text-3xl shrink-0">
+                  <div className="text-2xl sm:text-3xl shrink-0">
                     {getNotificationIcon(notification.type)}
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{notification.title}</h3>
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <h3 className="font-semibold text-sm sm:text-base line-clamp-1">
+                          {notification.title}
+                        </h3>
                         {!notification.isRead && (
-                          <Badge variant="default" className="text-xs">
+                          <Badge
+                            variant="default"
+                            className="text-[10px] sm:text-xs shrink-0"
+                          >
                             New
                           </Badge>
                         )}
                       </div>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap shrink-0">
                         {formatDistanceToNow(new Date(notification.createdAt), {
                           addSuffix: true,
                         })}
                       </span>
                     </div>
 
-                    <p className="text-sm text-foreground mb-2">
+                    <p className="text-xs sm:text-sm text-foreground mb-2 line-clamp-2">
                       {notification.message}
                     </p>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 mt-3">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-2 sm:mt-3">
                       {notification.link && (
                         <Button
                           variant="outline"
@@ -252,6 +264,7 @@ export function NotificationList({
                               markAsRead(notification.id);
                             }
                           }}
+                          className="text-xs h-7 sm:h-8"
                         >
                           <Link href={notification.link}>View</Link>
                         </Button>
@@ -261,19 +274,22 @@ export function NotificationList({
                           variant="ghost"
                           size="sm"
                           onClick={() => markAsRead(notification.id)}
+                          className="text-xs h-7 sm:h-8"
                         >
-                          <FaCheck className="mr-2" />
-                          Mark Read
+                          <FaCheck className="mr-1 sm:mr-2 h-3 w-3" />
+                          <span className="hidden sm:inline">Mark Read</span>
+                          <span className="sm:hidden">Read</span>
                         </Button>
                       )}
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => deleteNotification(notification.id)}
-                        className="text-(--theme-danger) hover:text-(--theme-danger-dark)"
+                        className="text-(--theme-danger) hover:text-(--theme-danger-dark) text-xs h-7 sm:h-8"
                       >
-                        <FaTrash className="mr-2" />
-                        Delete
+                        <FaTrash className="mr-1 sm:mr-2 h-3 w-3" />
+                        <span className="hidden sm:inline">Delete</span>
+                        <span className="sm:hidden">Del</span>
                       </Button>
                     </div>
                   </div>

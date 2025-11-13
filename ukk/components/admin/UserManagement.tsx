@@ -218,33 +218,43 @@ export default function UserManagement({ users }: UserManagementProps) {
       )}
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total Users</CardDescription>
-            <CardTitle className="text-3xl">{stats.total}</CardTitle>
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardDescription className="text-xs sm:text-sm">
+              Total Users
+            </CardDescription>
+            <CardTitle className="text-2xl sm:text-3xl">
+              {stats.total}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Admins</CardDescription>
-            <CardTitle className="text-3xl text-(--theme-danger)">
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardDescription className="text-xs sm:text-sm">
+              Admins
+            </CardDescription>
+            <CardTitle className="text-2xl sm:text-3xl text-(--theme-danger)">
               {stats.admins}
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Leaders</CardDescription>
-            <CardTitle className="text-3xl text-(--theme-secondary)">
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardDescription className="text-xs sm:text-sm">
+              Leaders
+            </CardDescription>
+            <CardTitle className="text-2xl sm:text-3xl text-(--theme-secondary)">
               {stats.leaders}
             </CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Members</CardDescription>
-            <CardTitle className="text-3xl text-(--theme-primary)">
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardDescription className="text-xs sm:text-sm">
+              Members
+            </CardDescription>
+            <CardTitle className="text-2xl sm:text-3xl text-(--theme-primary)">
               {stats.members}
             </CardTitle>
           </CardHeader>
@@ -254,14 +264,19 @@ export default function UserManagement({ users }: UserManagementProps) {
       {/* Search */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <CardTitle>All Users</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-xl sm:text-2xl">All Users</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">
                 Manage user roles and view their activity
               </CardDescription>
             </div>
-            <Button onClick={() => setAddUserOpen(true)} disabled={loading}>
+            <Button
+              onClick={() => setAddUserOpen(true)}
+              disabled={loading}
+              size="sm"
+              className="w-full sm:w-auto"
+            >
               <FaPlus className="mr-2" />
               Add User
             </Button>
@@ -292,74 +307,95 @@ export default function UserManagement({ users }: UserManagementProps) {
               return (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold shrink-0">
                         {user.name.charAt(0).toUpperCase()}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold">{user.name}</h3>
-                          <Badge className={getRoleColor(user.globalRole)}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                          <h3 className="font-semibold text-sm sm:text-base truncate">
+                            {user.name}
+                          </h3>
+                          <Badge
+                            className={`${getRoleColor(
+                              user.globalRole
+                            )} text-xs`}
+                          >
                             {user.globalRole}
                           </Badge>
                           {isLeadingProject && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] sm:text-xs truncate max-w-[150px]"
+                            >
                               Leading: {leadingProject?.project.name}
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {user.email}
                         </p>
                       </div>
                     </div>
 
                     {/* User Activity Stats */}
-                    <div className="flex items-center gap-4 text-sm text-foreground/70 ml-13">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-foreground/70 ml-0 sm:ml-13">
                       <div className="flex items-center gap-1">
-                        <FaProjectDiagram className="w-3 h-3" />
-                        <span>
-                          {user.createdProjects.length} projects created
+                        <FaProjectDiagram className="w-3 h-3 shrink-0" />
+                        <span className="whitespace-nowrap">
+                          {user.createdProjects.length} projects
                         </span>
                       </div>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <div className="flex items-center gap-1">
-                        <FaUser className="w-3 h-3" />
-                        <span>
-                          Member in {user.projectMembers.length} projects
+                        <FaUser className="w-3 h-3 shrink-0" />
+                        <span className="whitespace-nowrap">
+                          In {user.projectMembers.length}
                         </span>
                       </div>
-                      <span>•</span>
+                      <span className="hidden sm:inline">•</span>
                       <div className="flex items-center gap-1">
-                        <FaTasks className="w-3 h-3" />
-                        <span>{user.createdCards.length} tasks created</span>
+                        <FaTasks className="w-3 h-3 shrink-0" />
+                        <span className="whitespace-nowrap">
+                          {user.createdCards.length} tasks
+                        </span>
                       </div>
-                      <span>•</span>
+                      <span className="hidden md:inline">•</span>
                       <div className="flex items-center gap-1">
-                        <FaComments className="w-3 h-3" />
-                        <span>{user.comments.length} comments</span>
+                        <FaComments className="w-3 h-3 shrink-0" />
+                        <span className="whitespace-nowrap">
+                          {user.comments.length} comments
+                        </span>
                       </div>
                     </div>
 
                     {/* Projects List */}
                     {user.projectMembers.length > 0 && (
-                      <div className="mt-2 ml-13">
+                      <div className="mt-2 ml-0 sm:ml-13">
                         <p className="text-xs text-muted-foreground mb-1">
                           Projects:
                         </p>
                         <div className="flex flex-wrap gap-1">
-                          {user.projectMembers.map((pm) => (
+                          {user.projectMembers.slice(0, 3).map((pm) => (
                             <Badge
                               key={pm.id}
                               variant="outline"
-                              className="text-xs"
+                              className="text-[10px] sm:text-xs"
                             >
                               {pm.project.name} ({pm.projectRole})
                             </Badge>
                           ))}
+                          {user.projectMembers.length > 3 && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] sm:text-xs"
+                            >
+                              +{user.projectMembers.length - 3} more
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     )}
@@ -376,9 +412,11 @@ export default function UserManagement({ users }: UserManagementProps) {
                         );
                       }}
                       disabled={loading}
+                      className="flex-1 sm:flex-none text-xs sm:text-sm"
                     >
-                      <FaEdit className="mr-2" />
-                      Change Role
+                      <FaEdit className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Change Role</span>
+                      <span className="sm:hidden">Edit</span>
                     </Button>
                   </div>
                 </div>

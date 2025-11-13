@@ -90,21 +90,26 @@ export function AdminDashboard({ projects, users }: AdminDashboardProps) {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl lg:text-3xl font-bold">Admin Dashboard</h1>
+          <p className="text-sm lg:text-base text-muted-foreground">
             System overview and statistics
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="w-full sm:w-auto"
+          >
             <Link href="/admin">
               <FaChartLine className="mr-2" />
               Full Admin Panel
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild size="sm" className="w-full sm:w-auto">
             <Link href="/admin/users">
               <FaUserCog className="mr-2" />
               Manage Users

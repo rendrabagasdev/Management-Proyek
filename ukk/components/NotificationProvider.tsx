@@ -66,17 +66,19 @@ export function NotificationProvider({
       const unsubscribe = onForegroundMessage((payload) => {
         console.log("Foreground message:", payload);
 
-        // Show toast notification
-        toast({
-          title: payload.notification?.title || "New Notification",
-          description: payload.notification?.body || "",
-        });
+        // Don't show toast for foreground messages
+        // FCM already handles showing the notification
+        // We only need to update UI state if needed
 
-        // Optionally play a sound or show browser notification
-        if (payload.notification) {
-          // You can add sound here
-          // new Audio('/notification-sound.mp3').play();
-        }
+        // Optionally trigger a custom event for UI updates
+        window.dispatchEvent(
+          new CustomEvent("fcm-notification", {
+            detail: payload,
+          })
+        );
+
+        // Note: Browser's built-in notification will be shown by FCM
+        // No need to duplicate with toast
       });
 
       return () => {
