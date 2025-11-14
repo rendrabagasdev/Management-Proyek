@@ -3,6 +3,35 @@ import { authOptions } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+// Types for export data
+interface UserExportData {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  activity: {
+    projectsCreated: number;
+    projectMemberships: number;
+    tasksAssigned: number;
+    commentsPosted: number;
+    timeLogsCreated: number;
+  };
+}
+
+interface ProjectExportData {
+  id: number;
+  name: string;
+  createdBy: string;
+  memberCount: number;
+  statistics: {
+    totalCards: number;
+    todoCards: number;
+    inProgressCards: number;
+    reviewCards: number;
+    doneCards: number;
+  };
+}
+
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -364,9 +393,8 @@ function generatePDF(data: any) {
     </thead>
     <tbody>
       ${data.users
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(
-          (user: any) => `
+          (user: UserExportData) => `
         <tr>
           <td>${user.name}</td>
           <td>${user.email}</td>
@@ -402,9 +430,8 @@ function generatePDF(data: any) {
     </thead>
     <tbody>
       ${data.projects
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(
-          (project: any) => `
+          (project: ProjectExportData) => `
         <tr>
           <td><strong>${project.name}</strong></td>
           <td>${project.createdBy}</td>
