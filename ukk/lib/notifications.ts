@@ -51,7 +51,11 @@ export async function createNotification({
 
     // Trigger Firebase event for real-time notification
     await triggerUserEvent(userId, "notification:new", {
-      notification,
+      notification: {
+        ...notification,
+        createdAt: notification.createdAt.toISOString(),
+        updatedAt: notification.updatedAt.toISOString(),
+      },
       timestamp: new Date().toISOString(),
     });
 

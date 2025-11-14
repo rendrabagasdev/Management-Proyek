@@ -294,9 +294,12 @@ function NotificationItem({
             {notification.message}
           </p>
           <span className="text-[10px] sm:text-xs text-muted-foreground mt-1 block">
-            {formatDistanceToNow(new Date(notification.createdAt), {
-              addSuffix: true,
-            })}
+            {notification.createdAt &&
+            !isNaN(new Date(notification.createdAt).getTime())
+              ? formatDistanceToNow(new Date(notification.createdAt), {
+                  addSuffix: true,
+                })
+              : "Just now"}
           </span>
         </div>
 

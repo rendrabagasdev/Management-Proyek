@@ -242,9 +242,15 @@ export function NotificationList({
                         )}
                       </div>
                       <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap shrink-0">
-                        {formatDistanceToNow(new Date(notification.createdAt), {
-                          addSuffix: true,
-                        })}
+                        {notification.createdAt &&
+                        !isNaN(new Date(notification.createdAt).getTime())
+                          ? formatDistanceToNow(
+                              new Date(notification.createdAt),
+                              {
+                                addSuffix: true,
+                              }
+                            )
+                          : "Just now"}
                       </span>
                     </div>
 
