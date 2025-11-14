@@ -29,6 +29,7 @@ import {
   FaComments,
   FaSearch,
   FaPlus,
+  FaTrash,
 } from "react-icons/fa";
 
 interface ProjectMember {
@@ -68,6 +69,14 @@ export default function UserManagement({ users }: UserManagementProps) {
   const [selectedRole, setSelectedRole] = useState<
     "ADMIN" | "LEADER" | "MEMBER"
   >("MEMBER");
+
+  // Edit user info dialog
+  const [editingUserInfo, setEditingUserInfo] = useState<User | null>(null);
+  const [editedName, setEditedName] = useState("");
+  const [editedEmail, setEditedEmail] = useState("");
+
+  // Delete user dialog
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   // Add user dialog
   const [addUserOpen, setAddUserOpen] = useState(false);
@@ -123,6 +132,86 @@ export default function UserManagement({ users }: UserManagementProps) {
       setError(
         err instanceof Error ? err.message : "Failed to update user role"
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateUser = async () => {
+    if (!editingUserInfo) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    // Validate inputs
+    if (!editedName || !editedEmail) {
+      setError("Name and email are required");
+      setLoading(false);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(editedEmail)) {
+      setError("Invalid email format");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/users/${editingUserInfo.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editedName,
+          email: editedEmail,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to update user");
+      }
+
+      setSuccess(`User ${editedName} updated successfully`);
+      setEditingUserInfo(null);
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update user");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(`/api/users/${deletingUser.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete user");
+      }
+
+      setSuccess(`User ${deletingUser.name} deleted successfully`);
+      setDeletingUser(null);
+      setTimeout(() => {
+        router.refresh();
+      }, 1000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete user");
     } finally {
       setLoading(false);
     }
@@ -406,6 +495,21 @@ export default function UserManagement({ users }: UserManagementProps) {
                       variant="outline"
                       size="sm"
                       onClick={() => {
+                        setEditingUserInfo(user);
+                        setEditedName(user.name);
+                        setEditedEmail(user.email);
+                      }}
+                      disabled={loading}
+                      className="flex-1 sm:flex-none text-xs sm:text-sm"
+                    >
+                      <FaEdit className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Edit User</span>
+                      <span className="sm:hidden">Edit</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
                         setEditingUser(user);
                         setSelectedRole(
                           user.globalRole as "ADMIN" | "LEADER" | "MEMBER"
@@ -414,9 +518,17 @@ export default function UserManagement({ users }: UserManagementProps) {
                       disabled={loading}
                       className="flex-1 sm:flex-none text-xs sm:text-sm"
                     >
-                      <FaEdit className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                       <span className="hidden sm:inline">Change Role</span>
-                      <span className="sm:hidden">Edit</span>
+                      <span className="sm:hidden">Role</span>
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setDeletingUser(user)}
+                      disabled={loading}
+                      className="text-xs sm:text-sm"
+                    >
+                      <FaTrash className="h-3 w-3 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
                 </div>
@@ -653,6 +765,159 @@ export default function UserManagement({ users }: UserManagementProps) {
             </Button>
             <Button onClick={handleAddUser} disabled={loading}>
               {loading ? "Creating..." : "Create User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Info Dialog */}
+      <Dialog
+        open={editingUserInfo !== null}
+        onOpenChange={(open) => !open && setEditingUserInfo(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit User Information</DialogTitle>
+            <DialogDescription>
+              Update name and email for {editingUserInfo?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Full Name *</Label>
+              <Input
+                id="edit-name"
+                placeholder="John Doe"
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email *</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                placeholder="john@example.com"
+                value={editedEmail}
+                onChange={(e) => setEditedEmail(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="bg-(--theme-primary-light)/10 border border-(--theme-primary-light) p-3 rounded text-sm">
+              <p className="text-xs text-muted-foreground">
+                💡 To change the user&apos;s password, the user should use the
+                &quot;Forgot Password&quot; feature or contact an administrator.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditingUserInfo(null)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateUser}
+              disabled={
+                loading ||
+                (editedName === editingUserInfo?.name &&
+                  editedEmail === editingUserInfo?.email)
+              }
+            >
+              {loading ? "Updating..." : "Update User"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog
+        open={deletingUser !== null}
+        onOpenChange={(open) => !open && setDeletingUser(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Delete User</DialogTitle>
+            <DialogDescription>
+              This action cannot be undone. Are you sure you want to delete this
+              user?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 border rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold">
+                  {deletingUser?.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold">{deletingUser?.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {deletingUser?.email}
+                  </p>
+                </div>
+              </div>
+              <Badge className={getRoleColor(deletingUser?.globalRole || "")}>
+                {deletingUser?.globalRole}
+              </Badge>
+            </div>
+
+            <div className="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 p-3 rounded">
+              <p className="text-sm font-semibold text-red-800 dark:text-red-200 mb-2">
+                ⚠️ Warning: This will also delete:
+              </p>
+              <ul className="text-xs text-red-700 dark:text-red-300 space-y-1 ml-4">
+                <li>
+                  • {deletingUser?.createdProjects.length || 0} projects created
+                  by this user
+                </li>
+                <li>
+                  • {deletingUser?.createdCards.length || 0} tasks created by
+                  this user
+                </li>
+                <li>
+                  • {deletingUser?.comments.length || 0} comments by this user
+                </li>
+                <li>• All time logs and activity history</li>
+                <li>
+                  • Project memberships (
+                  {deletingUser?.projectMembers.length || 0} projects)
+                </li>
+              </ul>
+            </div>
+
+            {deletingUser?.projectMembers.some(
+              (pm) => pm.projectRole === "LEADER"
+            ) && (
+              <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-3 rounded">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                  🔔 Note: This user is currently leading a project!
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeletingUser(null)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={loading}
+            >
+              {loading ? "Deleting..." : "Delete User"}
             </Button>
           </DialogFooter>
         </DialogContent>

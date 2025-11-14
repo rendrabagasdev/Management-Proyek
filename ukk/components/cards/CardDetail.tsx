@@ -729,6 +729,125 @@ export default function CardDetail({
           </Button>
         </div>
 
+        {/* Deadline Warning Alerts */}
+        {card.deadline &&
+          (() => {
+            const now = new Date();
+            const deadline = new Date(card.deadline);
+            const daysUntilDeadline = Math.ceil(
+              (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            );
+            const hoursUntilDeadline = Math.ceil(
+              (deadline.getTime() - now.getTime()) / (1000 * 60 * 60)
+            );
+            const isOverdue = deadline < now;
+            const isUrgent = daysUntilDeadline <= 1 && daysUntilDeadline > 0;
+            const isApproaching =
+              daysUntilDeadline <= 3 && daysUntilDeadline > 1;
+
+            if (isOverdue) {
+              return (
+                <div className="mb-4 p-4 bg-red-50 dark:bg-red-950 border-2 border-red-500 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">🚨</span>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-red-800 dark:text-red-200 text-lg mb-1">
+                        OVERDUE - Action Required!
+                      </h3>
+                      <p className="text-red-700 dark:text-red-300 text-sm mb-2">
+                        This task is{" "}
+                        <strong>{Math.abs(daysUntilDeadline)} days</strong>{" "}
+                        overdue. Please complete immediately or contact project
+                        leader.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+                        <FaClock />
+                        <span>
+                          Deadline was:{" "}
+                          {deadline.toLocaleString("en-US", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            } else if (isUrgent) {
+              return (
+                <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950 border-2 border-amber-500 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-amber-800 dark:text-amber-200 text-lg mb-1">
+                        URGENT - Due{" "}
+                        {hoursUntilDeadline <= 24
+                          ? `in ${hoursUntilDeadline} hours`
+                          : "Tomorrow"}
+                        !
+                      </h3>
+                      <p className="text-amber-700 dark:text-amber-300 text-sm mb-2">
+                        This task is due very soon. Please prioritize
+                        completion.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+                        <FaClock />
+                        <span>
+                          Deadline:{" "}
+                          {deadline.toLocaleString("en-US", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            } else if (isApproaching) {
+              return (
+                <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-400 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">⚠️</span>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                        Deadline Approaching - {daysUntilDeadline} Days
+                        Remaining
+                      </h3>
+                      <p className="text-yellow-700 dark:text-yellow-300 text-sm mb-2">
+                        Please ensure this task is on track for completion.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs text-yellow-600 dark:text-yellow-400">
+                        <FaClock />
+                        <span>
+                          Deadline:{" "}
+                          {deadline.toLocaleString("en-US", {
+                            weekday: "short",
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
@@ -1013,6 +1132,74 @@ export default function CardDetail({
                   )}
                 </div>
 
+                {/* Work Hours Stats */}
+                {card.timeLogs && card.timeLogs.length > 0 && (
+                  <div className="border rounded-lg p-3 bg-muted/50 space-y-2">
+                    <h4 className="text-xs font-semibold text-muted-foreground uppercase">
+                      Task Statistics
+                    </h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          Total Sessions
+                        </p>
+                        <p className="font-semibold">
+                          {
+                            card.timeLogs.filter((log) => log.endTime !== null)
+                              .length
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">
+                          Avg. Session
+                        </p>
+                        <p className="font-semibold">
+                          {card.timeLogs.filter((log) => log.durationMinutes)
+                            .length > 0
+                            ? formatDuration(
+                                Math.round(
+                                  (card.timeLogs
+                                    .filter((log) => log.durationMinutes)
+                                    .reduce(
+                                      (sum, log) =>
+                                        sum + (log.durationMinutes || 0),
+                                      0
+                                    ) /
+                                    card.timeLogs.filter(
+                                      (log) => log.durationMinutes
+                                    ).length) *
+                                    60
+                                )
+                              )
+                            : "0m"}
+                        </p>
+                      </div>
+                      {activeTimer && activeTimer.startTime && (
+                        <>
+                          <div className="col-span-2 pt-2 border-t">
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Current Session
+                            </p>
+                            <p className="font-semibold text-(--theme-success)">
+                              Started{" "}
+                              {new Date(activeTimer.startTime).toLocaleString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </p>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   onClick={handleToggleTimer}
                   disabled={loading}
@@ -1245,7 +1432,43 @@ export default function CardDetail({
                         {workHoursStatus.maxHours}h
                       </span>
                     </div>
+                    <div className="flex justify-between pt-1 border-t">
+                      <span>Progress:</span>
+                      <span className="font-medium">
+                        {Math.round(
+                          (workHoursStatus.hoursWorked /
+                            workHoursStatus.maxHours) *
+                            100
+                        )}
+                        %
+                      </span>
+                    </div>
                   </div>
+
+                  {/* Quick Tips */}
+                  {workHoursStatus.status === "warning" && (
+                    <div className="pt-3 border-t">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        💡 Quick Tip:
+                      </p>
+                      <p className="text-xs text-foreground">
+                        Complete your minimum hours today to maintain
+                        productivity goals.
+                      </p>
+                    </div>
+                  )}
+                  {workHoursStatus.status === "ok" &&
+                    workHoursStatus.remainingHours <= 2 && (
+                      <div className="pt-3 border-t">
+                        <p className="text-xs text-muted-foreground mb-1">
+                          💡 Quick Tip:
+                        </p>
+                        <p className="text-xs text-foreground">
+                          You&apos;re close to the daily limit. Consider
+                          wrapping up soon.
+                        </p>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
             )}
