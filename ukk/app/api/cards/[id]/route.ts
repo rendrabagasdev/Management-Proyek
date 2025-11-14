@@ -191,6 +191,7 @@ export async function PATCH(
     const updateData: Record<string, unknown> = {
       ...body,
       dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
+      deadline: body.deadline ? new Date(body.deadline) : undefined,
     };
 
     // Only update assigneeId if it's explicitly provided in the request

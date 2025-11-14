@@ -34,6 +34,7 @@ export default function NewCardPage({ params }: NewCardPageProps) {
     boardId: "",
     priority: "MEDIUM",
     dueDate: "",
+    deadline: "",
   });
 
   // Fetch boards for this project
@@ -77,6 +78,7 @@ export default function NewCardPage({ params }: NewCardPageProps) {
           ...formData,
           boardId: parseInt(formData.boardId),
           dueDate: formData.dueDate || null,
+          deadline: formData.deadline || null,
         }),
       });
 
@@ -199,19 +201,36 @@ export default function NewCardPage({ params }: NewCardPageProps) {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="dueDate" className="text-sm font-medium">
-                Due Date
-              </label>
-              <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) =>
-                  setFormData({ ...formData, dueDate: e.target.value })
-                }
-                disabled={loading}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label htmlFor="dueDate" className="text-sm font-medium">
+                  Due Date
+                </label>
+                <Input
+                  id="dueDate"
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) =>
+                    setFormData({ ...formData, dueDate: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="deadline" className="text-sm font-medium">
+                  Deadline
+                </label>
+                <Input
+                  id="deadline"
+                  type="date"
+                  value={formData.deadline}
+                  onChange={(e) =>
+                    setFormData({ ...formData, deadline: e.target.value })
+                  }
+                  disabled={loading}
+                />
+              </div>
             </div>
 
             <div className="flex gap-3 pt-4">

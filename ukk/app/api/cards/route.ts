@@ -14,7 +14,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { boardId, title, description, priority, dueDate, assigneeId } = body;
+    const {
+      boardId,
+      title,
+      description,
+      priority,
+      dueDate,
+      deadline,
+      assigneeId,
+    } = body;
 
     if (!boardId || !title) {
       return NextResponse.json(
@@ -73,6 +81,7 @@ export async function POST(request: NextRequest) {
         description,
         priority: priority || "MEDIUM",
         dueDate: dueDate ? new Date(dueDate) : null,
+        deadline: deadline ? new Date(deadline) : null,
         createdBy: userId,
         assigneeId: assigneeId ? parseInt(assigneeId) : null,
       },
