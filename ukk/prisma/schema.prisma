@@ -28,17 +28,19 @@ model User {
 
   // Relations
   projectMembers   ProjectMember[]
-  createdProjects  Project[]        @relation("ProjectCreator")
-  createdCards     Card[]           @relation("CardCreator")
-  assigneeCards    Card[]           @relation("CardAssignee")
+  createdProjects  Project[]            @relation("ProjectCreator")
+  createdCards     Card[]               @relation("CardCreator")
+  assigneeCards    Card[]               @relation("CardAssignee")
   comments         Comment[]
   timeLogs         TimeLog[]
-  assignedSubtasks Subtask[]        @relation("SubtaskAssignee")
-  assignedCards    CardAssignment[] @relation("AssignedCards")
-  assignedByCards  CardAssignment[] @relation("AssignedByCards")
+  assignedSubtasks Subtask[]            @relation("SubtaskAssignee")
+  assignedCards    CardAssignment[]     @relation("AssignedCards")
+  assignedByCards  CardAssignment[]     @relation("AssignedByCards")
   notifications    Notification[]
   accounts         Account[]
   sessions         Session[]
+  overtimeRequests OvertimeApproval[]   @relation("OvertimeRequester")
+  overtimeApprovals OvertimeApproval[]  @relation("OvertimeApprover")
 
   @@map("users")
 }
@@ -164,6 +166,7 @@ model Card {
   comments    Comment[]
   timeLogs    TimeLog[]
   assignments CardAssignment[]
+  overtimeApprovals OvertimeApproval[]
 
   @@map("cards")
 }
@@ -243,6 +246,29 @@ model TimeLog {
   @@map("time_logs")
 }
 
+model OvertimeApproval {
+  id            Int              @id @default(autoincrement())
+  cardId        Int
+  requestedBy   Int // User yang request
+  approverId    Int? // Leader yang approve/reject
+  status        ApprovalStatus   @default(PENDING)
+  reason        String           @db.Text // Alasan kenapa terlambat
+  daysOverdue   Int // Berapa hari terlambat
+  requestedAt   DateTime         @default(now())
+  respondedAt   DateTime?
+  approverNotes String?          @db.Text // Catatan dari approver
+  
+  // Relations
+  card      Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  requester User @relation("OvertimeRequester", fields: [requestedBy], references: [id], onDelete: Cascade)
+  approver  User? @relation("OvertimeApprover", fields: [approverId], references: [id], onDelete: SetNull)
+
+  @@index([cardId, status])
+  @@index([requestedBy, status])
+  @@index([approverId, status])
+  @@map("overtime_approvals")
+}
+
 model Notification {
   id        Int              @id @default(autoincrement())
   userId    Int
@@ -317,4 +343,13 @@ enum NotificationType {
   TIME_LOG_REMINDER
   DEADLINE_APPROACHING
   DEADLINE_OVERDUE
+  OVERTIME_REQUEST
+  OVERTIME_APPROVED
+  OVERTIME_REJECTED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

@@ -13,7 +13,12 @@ export type NotificationType =
   | "COMMENT_MENTION"
   | "SUBTASK_COMPLETED"
   | "PROJECT_INVITE"
-  | "TIME_LOG_REMINDER";
+  | "TIME_LOG_REMINDER"
+  | "DEADLINE_APPROACHING"
+  | "DEADLINE_OVERDUE"
+  | "OVERTIME_REQUEST"
+  | "OVERTIME_APPROVED"
+  | "OVERTIME_REJECTED";
 
 interface CreateNotificationParams {
   userId: number;

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useFirebaseEvent } from "@/lib/firebase-hooks";
 import { useToast } from "@/hooks/use-toast";
 import { RelativeTime } from "@/components/RelativeTime";
+import { OvertimeRequestDialog } from "@/components/cards/OvertimeRequestDialog";
+import { OvertimeApprovalStatus } from "@/components/cards/OvertimeApprovalStatus";
 import {
   Card,
   CardContent,
@@ -746,36 +748,64 @@ export default function CardDetail({
               daysUntilDeadline <= 3 && daysUntilDeadline > 1;
 
             if (isOverdue) {
+              const daysOverdue = Math.abs(daysUntilDeadline);
+              const isAssignee = card.assigneeId === userId;
+
               return (
-                <div className="mb-4 p-4 bg-red-50 dark:bg-red-950 border-2 border-red-500 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <span className="text-2xl">🚨</span>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-red-800 dark:text-red-200 text-lg mb-1">
-                        OVERDUE - Action Required!
-                      </h3>
-                      <p className="text-red-700 dark:text-red-300 text-sm mb-2">
-                        This task is{" "}
-                        <strong>{Math.abs(daysUntilDeadline)} days</strong>{" "}
-                        overdue. Please complete immediately or contact project
-                        leader.
-                      </p>
-                      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
-                        <FaClock />
-                        <span>
-                          Deadline was:{" "}
-                          {deadline.toLocaleString("en-US", {
-                            weekday: "short",
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
+                <div className="mb-4 space-y-3">
+                  <div className="p-4 bg-red-50 dark:bg-red-950 border-2 border-red-500 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🚨</span>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-red-800 dark:text-red-200 text-lg mb-1">
+                          OVERDUE - Action Required!
+                        </h3>
+                        <p className="text-red-700 dark:text-red-300 text-sm mb-2">
+                          This task is <strong>{daysOverdue} days</strong>{" "}
+                          overdue.
+                          {isAssignee
+                            ? " You need leader approval to continue working on this task."
+                            : " Please contact project leader."}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+                          <FaClock />
+                          <span>
+                            Deadline was:{" "}
+                            {deadline.toLocaleString("en-US", {
+                              weekday: "short",
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Overtime Approval Status & Request */}
+                  <OvertimeApprovalStatus
+                    cardId={card.id}
+                    isAssignee={isAssignee}
+                  />
+
+                  {isAssignee && (
+                    <OvertimeRequestDialog
+                      cardId={card.id}
+                      cardTitle={card.title}
+                      daysOverdue={daysOverdue}
+                      onSuccess={() => {
+                        toast({
+                          title: "Request Submitted",
+                          description:
+                            "Your overtime approval request has been sent to project leaders.",
+                        });
+                        router.refresh();
+                      }}
+                    />
+                  )}
                 </div>
               );
             } else if (isUrgent) {

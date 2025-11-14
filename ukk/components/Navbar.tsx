@@ -27,6 +27,7 @@ import {
   FaPlus,
   FaBars,
   FaTimes,
+  FaClock,
 } from "react-icons/fa";
 import { cn } from "@/lib/utils";
 
@@ -57,6 +58,15 @@ export function Navbar() {
       },
     ];
 
+    const leaderLinks = [
+      {
+        href: "/overtime-approvals",
+        label: "Overtime Approvals",
+        icon: FaClock,
+        roles: ["ADMIN", "LEADER"],
+      },
+    ];
+
     const adminLinks = [
       {
         href: "/admin",
@@ -69,6 +79,10 @@ export function Navbar() {
     let links = [...baseLinks];
 
     // Add role-specific links
+    if (userRole === "ADMIN" || userRole === "LEADER") {
+      links = [...links, ...leaderLinks];
+    }
+
     if (userRole === "ADMIN") {
       links = [...links, ...adminLinks];
     }
