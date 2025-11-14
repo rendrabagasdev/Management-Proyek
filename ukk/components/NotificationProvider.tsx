@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useState, useCallback, useEffect } from "react";
+import { createContext, useState, useCallback, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   initializeFCM,
@@ -8,6 +8,7 @@ import {
   deleteFCMToken,
   isNotificationSupported,
 } from "@/lib/fcm";
+import { logger } from "@/lib/logger";
 
 interface Toast {
   title: string;
@@ -30,15 +31,16 @@ export function NotificationProvider({
   const { data: session, status } = useSession();
   const [toasts, setToasts] = useState<(Toast & { id: string })[]>([]);
   const [fcmInitialized, setFcmInitialized] = useState(false);
+  const shownNotificationsRef = useRef<Set<string>>(new Set());
 
   const toast = useCallback((toast: Toast) => {
     const id = Math.random().toString(36).slice(2, 11);
     setToasts((prev) => [...prev, { ...toast, id }]);
 
-    // Auto dismiss after 3 seconds
+    // Auto dismiss after 5 seconds
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3000);
+    }, 5000);
   }, []);
 
   // Initialize FCM when user logs in
@@ -46,52 +48,67 @@ export function NotificationProvider({
     if (status === "authenticated" && session && !fcmInitialized) {
       // Check if notifications are supported
       if (!isNotificationSupported()) {
-        console.log("Push notifications not supported in this browser");
+        logger.info("Push notifications not supported in this browser");
         return;
       }
+
+      // Clear shown notifications on app load
+      shownNotificationsRef.current.clear();
 
       // Initialize FCM and get token
       initializeFCM()
         .then((token) => {
           if (token) {
-            console.log("FCM initialized successfully");
+            logger.info("FCM initialized successfully");
             setFcmInitialized(true);
           }
         })
         .catch((error) => {
-          console.error("Failed to initialize FCM:", error);
+          logger.error("Failed to initialize FCM:", error);
         });
 
-      // Listen for foreground messages
+      // Listen for foreground messages (FCM)
       const unsubscribe = onForegroundMessage((payload) => {
-        console.log("Foreground message:", payload);
+        logger.debug("FCM Foreground message:", payload);
 
-        // Don't show toast for foreground messages
-        // FCM already handles showing the notification
-        // We only need to update UI state if needed
+        // Generate unique ID from notification data
+        const notificationId =
+          payload.data?.notificationId ||
+          payload.messageId ||
+          `${Date.now()}-${Math.random()}`;
 
-        // Optionally trigger a custom event for UI updates
+        // Skip if already shown
+        if (shownNotificationsRef.current.has(notificationId)) {
+          logger.debug("Notification already shown, skipping:", notificationId);
+          return;
+        }
+
+        // Mark as shown
+        shownNotificationsRef.current.add(notificationId);
+
+        // Dispatch custom event for UI updates (for NotificationBell)
         window.dispatchEvent(
           new CustomEvent("fcm-notification", {
             detail: payload,
           })
         );
 
-        // Note: Browser's built-in notification will be shown by FCM
-        // No need to duplicate with toast
+        // FCM already shows browser notification
+        // No need to show toast here to avoid duplication
       });
 
       return () => {
         if (unsubscribe) unsubscribe();
       };
     }
-  }, [status, session, fcmInitialized, toast]);
+  }, [status, session, fcmInitialized]);
 
   // Clean up FCM token on logout
   useEffect(() => {
     if (status === "unauthenticated" && fcmInitialized) {
       deleteFCMToken().then(() => {
         setFcmInitialized(false);
+        shownNotificationsRef.current.clear();
       });
     }
   }, [status, fcmInitialized]);

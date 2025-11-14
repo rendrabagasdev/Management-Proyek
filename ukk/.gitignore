@@ -19,19 +19,29 @@
 
 # production
 /build
+.next
+out
 
 # misc
 .DS_Store
 *.pem
+.vscode/
+.idea/
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# local env files - IMPORTANT: Keep production secrets safe!
+.env
+.env*.local
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
 
 # vercel
 .vercel
@@ -40,7 +50,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# prisma
 /app/generated/prisma
+prisma/migrations/**/migration.sql
 
 # ╔═══════════════════════════════════════════════════════════════╗
 # ║  Docker Backup (Not Used - PM2 Deployment)                    ║
@@ -56,3 +68,11 @@ docker.sh.backup
 nginx/
 fail2ban/
 mysql-config/
+
+# Production artifacts
+pm2.log
+pm2-error.log
+*.log
+
+# OS specific
+Thumbs.db
