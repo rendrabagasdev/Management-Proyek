@@ -59,7 +59,7 @@ export function getDeadlineStatus(
       message: `Overdue by ${daysOverdue} day${daysOverdue !== 1 ? "s" : ""}`,
       color: "red",
       bgColor:
-        "bg-(--theme-danger) bg-opacity-10 dark:bg-(--theme-danger) dark:bg-opacity-20",
+        "bg-(--theme-danger)/10 dark:bg-(--theme-danger) dark:bg-opacity-20",
       textColor: "text-(--theme-danger)",
       icon: "🚨",
     };
@@ -77,7 +77,7 @@ export function getDeadlineStatus(
       } remaining`,
       color: "red",
       bgColor:
-        "bg-(--theme-danger) bg-opacity-5 dark:bg-(--theme-danger) dark:bg-opacity-15",
+        "bg-(--theme-danger)/5 dark:bg-(--theme-danger) dark:bg-opacity-15",
       textColor: "text-(--theme-danger)",
       icon: "⏰",
     };
@@ -95,7 +95,7 @@ export function getDeadlineStatus(
       } remaining`,
       color: "orange",
       bgColor:
-        "bg-(--theme-warning) bg-opacity-10 dark:bg-(--theme-warning) dark:bg-opacity-15",
+        "bg-(--theme-warning)/10 dark:bg-(--theme-warning) dark:bg-opacity-15",
       textColor: "text-(--theme-warning)",
       icon: "⚠️",
     };
@@ -110,7 +110,7 @@ export function getDeadlineStatus(
     message: `${daysRemaining} day${daysRemaining !== 1 ? "s" : ""} remaining`,
     color: "green",
     bgColor:
-      "bg-(--theme-success) bg-opacity-10 dark:bg-(--theme-success) dark:bg-opacity-15",
+      "bg-(--theme-success)/10 dark:bg-(--theme-success) dark:bg-opacity-15",
     textColor: "text-(--theme-success)",
     icon: "✅",
   };

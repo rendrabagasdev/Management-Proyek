@@ -153,7 +153,7 @@ export default async function ProjectsPage() {
                 <Card
                   className={`hover:shadow-lg transition-shadow cursor-pointer h-full ${
                     project.isCompleted
-                      ? "border-(--theme-primary)er-opacity-40 bg-(--theme-primary) bg-opacity-5"
+                      ? "border-(--theme-primary)er-opacity-40 bg-(--theme-primary)/5"
                       : ""
                   }`}
                 >

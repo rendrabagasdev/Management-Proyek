@@ -69,7 +69,7 @@ import { themeButton } from "@/lib/theme-utils";
 **✅ After:**
 
 ```tsx
-<div className="bg-[var(--theme-primary)] bg-opacity-10 text-[var(--theme-primary)] border-[var(--theme-primary)] border">
+<div className="bg-[var(--theme-primary)]/10 text-[var(--theme-primary)] border-[var(--theme-primary)] border">
   Info message
 </div>
 ```
@@ -89,7 +89,7 @@ import { themeButton } from "@/lib/theme-utils";
 ```tsx
 import { themeCard, themeText } from "@/lib/theme-utils";
 
-<div className={`${themeCard.primary} bg-opacity-5 p-4`}>
+<div className={`${themeCard.primary}/5 p-4`}>
   <h3 className={themeText.primary}>Title</h3>
 </div>;
 ```
@@ -201,17 +201,17 @@ import { themeBadge } from "@/lib/theme-utils";
 import { themeBg, themeText, themeBorder } from "@/lib/theme-utils";
 
 // Success alert
-<div className={`${themeBg.success} bg-opacity-10 ${themeBorder.success} ${themeText.success} border-l-4 p-4`}>
+<div className={`${themeBg.success}/10 ${themeBorder.success} ${themeText.success} border-l-4 p-4`}>
   Operation successful!
 </div>
 
 // Warning alert
-<div className={`${themeBg.warning} bg-opacity-10 ${themeBorder.warning} ${themeText.warning} border-l-4 p-4`}>
+<div className={`${themeBg.warning}/10 ${themeBorder.warning} ${themeText.warning} border-l-4 p-4`}>
   Please review this.
 </div>
 
 // Danger alert
-<div className={`${themeBg.danger} bg-opacity-10 ${themeBorder.danger} ${themeText.danger} border-l-4 p-4`}>
+<div className={`${themeBg.danger}/10 ${themeBorder.danger} ${themeText.danger} border-l-4 p-4`}>
   Error occurred!
 </div>
 ```
@@ -233,8 +233,8 @@ import { FaCheck, FaExclamation, FaTimes } from "react-icons/fa";
 
 ```tsx
 // ❌ Before
-bg-blue-50    → bg-[var(--theme-primary)] bg-opacity-5
-bg-blue-100   → bg-[var(--theme-primary)] bg-opacity-10
+bg-blue-50    → bg-[var(--theme-primary)]/5
+bg-blue-100   → bg-[var(--theme-primary)]/10
 bg-blue-500   → bg-[var(--theme-primary)]
 bg-blue-600   → bg-[var(--theme-primary-dark)]
 text-blue-600 → text-[var(--theme-primary)]
@@ -245,8 +245,8 @@ border-blue-500 → border-[var(--theme-primary)]
 
 ```tsx
 // ❌ Before
-bg-purple-50    → bg-[var(--theme-secondary)] bg-opacity-5
-bg-purple-100   → bg-[var(--theme-secondary)] bg-opacity-10
+bg-purple-50    → bg-[var(--theme-secondary)]/5
+bg-purple-100   → bg-[var(--theme-secondary)]/10
 bg-purple-500   → bg-[var(--theme-secondary)]
 bg-purple-600   → bg-[var(--theme-secondary-dark)]
 text-purple-600 → text-[var(--theme-secondary)]
@@ -256,7 +256,7 @@ text-purple-600 → text-[var(--theme-secondary)]
 
 ```tsx
 // ❌ Before
-bg-orange-50    → bg-[var(--theme-accent)] bg-opacity-5
+bg-orange-50    → bg-[var(--theme-accent)]/5
 bg-orange-500   → bg-[var(--theme-accent)]
 text-orange-600 → text-[var(--theme-accent)]
 ```
@@ -265,8 +265,8 @@ text-orange-600 → text-[var(--theme-accent)]
 
 ```tsx
 // ❌ Before
-bg-green-50    → bg-[var(--theme-success)] bg-opacity-5
-bg-green-100   → bg-[var(--theme-success)] bg-opacity-10
+bg-green-50    → bg-[var(--theme-success)]/5
+bg-green-100   → bg-[var(--theme-success)]/10
 bg-green-500   → bg-[var(--theme-success)]
 text-green-600 → text-[var(--theme-success)]
 ```
@@ -275,8 +275,8 @@ text-green-600 → text-[var(--theme-success)]
 
 ```tsx
 // ❌ Before
-bg-red-50    → bg-[var(--theme-danger)] bg-opacity-5
-bg-red-100   → bg-[var(--theme-danger)] bg-opacity-10
+bg-red-50    → bg-[var(--theme-danger)]/5
+bg-red-100   → bg-[var(--theme-danger)]/10
 bg-red-500   → bg-[var(--theme-danger)]
 text-red-600 → text-[var(--theme-danger)]
 ```

@@ -100,13 +100,13 @@ export const themeButton = {
 };
 
 export const themeBadge = {
-  primary: `${themeBg.primary} ${themeText.primary} bg-opacity-10`,
-  secondary: `${themeBg.secondary} ${themeText.secondary} bg-opacity-10`,
-  accent: `${themeBg.accent} ${themeText.accent} bg-opacity-10`,
-  success: `${themeBg.success} ${themeText.success} bg-opacity-10`,
-  warning: `${themeBg.warning} ${themeText.warning} bg-opacity-10`,
-  danger: `${themeBg.danger} ${themeText.danger} bg-opacity-10`,
-  info: `${themeBg.info} ${themeText.info} bg-opacity-10`,
+  primary: `${themeBg.primary} ${themeText.primary}/10`,
+  secondary: `${themeBg.secondary} ${themeText.secondary}/10`,
+  accent: `${themeBg.accent} ${themeText.accent}/10`,
+  success: `${themeBg.success} ${themeText.success}/10`,
+  warning: `${themeBg.warning} ${themeText.warning}/10`,
+  danger: `${themeBg.danger} ${themeText.danger}/10`,
+  info: `${themeBg.info} ${themeText.info}/10`,
 };
 
 export const themeCard = {

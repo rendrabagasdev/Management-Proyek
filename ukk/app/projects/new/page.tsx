@@ -282,11 +282,11 @@ export default function NewProjectPage() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "LEADER":
-        return "bg-(--theme-secondary) bg-opacity-10 text-(--theme-secondary)";
+        return "bg-(--theme-secondary)/10 text-(--theme-secondary)";
       case "DEVELOPER":
-        return "bg-(--theme-primary) bg-opacity-10 text-(--theme-primary)";
+        return "bg-(--theme-primary)/10 text-(--theme-primary)";
       case "DESIGNER":
-        return "bg-(--theme-accent) bg-opacity-10 text-(--theme-accent)";
+        return "bg-(--theme-accent)/10 text-(--theme-accent)";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -316,7 +316,7 @@ export default function NewProjectPage() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) p-3 rounded text-sm">
+              <div className="bg-(--theme-danger)/10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) p-3 rounded text-sm">
                 {error}
               </div>
             )}
@@ -398,7 +398,7 @@ export default function NewProjectPage() {
                   <>
                     {users.find((u) => u.id === parseInt(selectedUserId))
                       ?.globalRole !== "LEADER" && (
-                      <div className="bg-(--theme-danger) bg-opacity-10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) px-3 py-2 rounded text-sm flex items-center gap-2">
+                      <div className="bg-(--theme-danger)/10 border border-(--theme-danger) border-opacity-30 text-(--theme-danger) px-3 py-2 rounded text-sm flex items-center gap-2">
                         <span>❌</span>
                         <span>
                           This user does not have LEADER global role. Only users
@@ -409,7 +409,7 @@ export default function NewProjectPage() {
                     )}
                     {users.find((u) => u.id === parseInt(selectedUserId))
                       ?.isLeaderElsewhere && (
-                      <div className="bg-(--theme-warning) bg-opacity-10 border border-(--theme-warning)er-opacity-30 text-(--theme-warning) py-2 rounded text-sm flex items-center gap-2">
+                      <div className="bg-(--theme-warning)/10 border border-(--theme-warning)er-opacity-30 text-(--theme-warning) py-2 rounded text-sm flex items-center gap-2">
                         <span>⚠️</span>
                         <span>
                           This user is already a LEADER in another project. They
@@ -583,7 +583,7 @@ export default function NewProjectPage() {
               )}
             </div>
 
-            <div className="bg-(--theme-info) bg-opacity-10 border border-(--theme-info) border-opacity-30 p-3 sm:p-4 rounded">
+            <div className="bg-(--theme-info)/10 border border-(--theme-info) border-opacity-30 p-3 sm:p-4 rounded">
               <h4 className="font-medium text-(--theme-info) mb-2 text-sm sm:text-base">
                 What happens next?
               </h4>

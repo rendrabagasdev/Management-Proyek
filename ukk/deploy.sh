@@ -22,11 +22,10 @@ if [ ! -f .env.production ]; then
 fi
 
 echo -e "${GREEN}✅ Environment file found${NC}"
-echo ""
-
+echo "
 # Install dependencies
 echo -e "${YELLOW}📦 Installing dependencies...${NC}"
-npm install
+bun install
 echo -e "${GREEN}✅ Dependencies installed${NC}"
 echo ""
 

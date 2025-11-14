@@ -138,7 +138,7 @@ export function LeaderDashboard({ projects }: LeaderDashboardProps) {
       {(overdueTasks.length > 0 || highPriorityPending.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {overdueTasks.length > 0 && (
-            <Card className="border-(--theme-danger) border-opacity-30 bg-(--theme-danger) bg-opacity-5">
+            <Card className="border-(--theme-danger) border-opacity-30 bg-(--theme-danger)/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-(--theme-danger)">
                   <FaExclamationTriangle />
@@ -175,7 +175,7 @@ export function LeaderDashboard({ projects }: LeaderDashboardProps) {
           )}
 
           {highPriorityPending.length > 0 && (
-            <Card className="border-(--theme-accent) border-opacity-30 bg-(--theme-accent) bg-opacity-5">
+            <Card className="border-(--theme-accent) border-opacity-30 bg-(--theme-accent)/5">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-(--theme-accent)">
                   <FaFire />
