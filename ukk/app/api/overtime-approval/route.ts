@@ -272,7 +272,8 @@ export async function PATCH(request: NextRequest) {
     }
 
     const userId = parseInt(session.user.id);
-    const { approvalId, action, approverNotes } = await request.json();
+    const { approvalId, action, approverNotes, newDeadline } =
+      await request.json();
 
     if (!approvalId || !action || !["approve", "reject"].includes(action)) {
       return NextResponse.json(
@@ -281,7 +282,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Get approval details
+    // Ambil data approval
     const approval = await prisma.overtimeApproval.findUnique({
       where: { id: approvalId },
       include: {
@@ -290,9 +291,7 @@ export async function PATCH(request: NextRequest) {
             board: {
               include: {
                 project: {
-                  include: {
-                    members: true,
-                  },
+                  include: { members: true },
                 },
               },
             },
@@ -304,52 +303,72 @@ export async function PATCH(request: NextRequest) {
 
     if (!approval) {
       return NextResponse.json(
-        { error: "Approval request not found" },
+        { error: "Approval not found" },
         { status: 404 }
       );
     }
 
     if (approval.status !== "PENDING") {
       return NextResponse.json(
-        { error: "This request has already been processed" },
+        { error: "This request has been processed already" },
         { status: 400 }
       );
     }
 
-    // Check if user is leader or admin
+    // Role check
     const project = approval.card.board.project;
-    const isProjectCreator = project.createdBy === userId;
-    const isProjectLeader = project.members.some(
+    const isCreator = project.createdBy === userId;
+    const isLeader = project.members.some(
       (m) => m.userId === userId && m.projectRole === "LEADER"
     );
     const isAdmin = session.user.role === "ADMIN";
 
-    if (!isProjectCreator && !isProjectLeader && !isAdmin) {
+    if (!isCreator && !isLeader && !isAdmin) {
       return NextResponse.json(
-        { error: "Only project leaders or admins can approve/reject requests" },
+        { error: "You are not allowed to approve/reject this request" },
         { status: 403 }
       );
     }
 
-    // Update approval
-    const updatedApproval = await prisma.overtimeApproval.update({
-      where: { id: approvalId },
-      data: {
-        status: action === "approve" ? "APPROVED" : "REJECTED",
-        approverId: userId,
-        respondedAt: new Date(),
-        approverNotes: approverNotes || null,
-      },
-      include: {
-        card: true,
-        requester: true,
-        approver: {
-          select: { name: true },
+    // Kalau approve → wajib ada newDeadline
+    if (action === "approve" && !newDeadline) {
+      return NextResponse.json(
+        { error: "New deadline is required when approving" },
+        { status: 400 }
+      );
+    }
+
+    // Begin transaction
+    const updatedApproval = await prisma.$transaction(async (tx) => {
+      const updated = await tx.overtimeApproval.update({
+        where: { id: approvalId },
+        data: {
+          status: action === "approve" ? "APPROVED" : "REJECTED",
+          approverId: userId,
+          respondedAt: new Date(),
+          approverNotes: approverNotes || null,
         },
-      },
+        include: {
+          card: true,
+          requester: true,
+          approver: { select: { name: true } },
+        },
+      });
+
+      // Kalau approve → update card.deadline
+      if (action === "approve") {
+        await tx.card.update({
+          where: { id: approval.card.id },
+          data: {
+            deadline: new Date(newDeadline),
+          },
+        });
+      }
+
+      return updated;
     });
 
-    // Send notification to requester
+    // Notifikasi
     await createNotification({
       userId: approval.requestedBy,
       type: action === "approve" ? "OVERTIME_APPROVED" : "OVERTIME_REJECTED",
@@ -359,8 +378,8 @@ export async function PATCH(request: NextRequest) {
           : "Overtime Request Rejected",
       message:
         action === "approve"
-          ? `Your overtime request for "${approval.card.title}" has been approved by ${session.user.name}`
-          : `Your overtime request for "${approval.card.title}" has been rejected by ${session.user.name}`,
+          ? `Your overtime request for "${approval.card.title}" has been approved.`
+          : `Your overtime request for "${approval.card.title}" has been rejected.`,
       link: `/cards/${approval.cardId}`,
     });
 

@@ -51,6 +51,7 @@ interface OvertimeApproval {
 export default function OvertimeApprovalsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+
   const [approvals, setApprovals] = useState<OvertimeApproval[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
@@ -58,6 +59,7 @@ export default function OvertimeApprovalsPage() {
     useState<OvertimeApproval | null>(null);
   const [action, setAction] = useState<"approve" | "reject">("approve");
   const [notes, setNotes] = useState("");
+  const [newDeadline, setNewDeadline] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -96,7 +98,14 @@ export default function OvertimeApprovalsPage() {
   const handleProcess = async () => {
     if (!selectedApproval) return;
 
+    // VALIDASI DI AWAL — WAJIB
+    if (action === "approve" && !newDeadline) {
+      alert("Please set a new deadline before approving.");
+      return;
+    }
+
     setProcessingId(selectedApproval.id);
+
     try {
       const response = await fetch("/api/overtime-approval", {
         method: "PATCH",
@@ -105,6 +114,7 @@ export default function OvertimeApprovalsPage() {
           approvalId: selectedApproval.id,
           action,
           approverNotes: notes.trim() || undefined,
+          newDeadline: action === "approve" ? newDeadline : undefined,
         }),
       });
 
@@ -112,10 +122,12 @@ export default function OvertimeApprovalsPage() {
         throw new Error("Failed to process request");
       }
 
-      // Refresh list
       await fetchApprovals();
+
+      // RESET SEMUA STATE
       setSelectedApproval(null);
       setNotes("");
+      setNewDeadline("");
     } catch (error) {
       console.error("Process approval error:", error);
       alert("Failed to process request");
@@ -181,6 +193,7 @@ export default function OvertimeApprovalsPage() {
                   </Badge>
                 </div>
               </CardHeader>
+
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div>
@@ -223,6 +236,7 @@ export default function OvertimeApprovalsPage() {
                     <FaCheck className="mr-2" />
                     Approve
                   </Button>
+
                   <Button
                     onClick={() => {
                       setSelectedApproval(approval);
@@ -242,7 +256,7 @@ export default function OvertimeApprovalsPage() {
         </div>
       )}
 
-      {/* Confirmation Dialog */}
+      {/* DIALOG */}
       <Dialog
         open={selectedApproval !== null}
         onOpenChange={(open) => !open && setSelectedApproval(null)}
@@ -254,13 +268,32 @@ export default function OvertimeApprovalsPage() {
             </DialogTitle>
             <DialogDescription>
               {action === "approve"
-                ? "Allow the team member to continue working on this overdue task."
-                : "Decline the overtime request. The member should coordinate with the team."}
+                ? "Set a new deadline and approve this overtime request."
+                : "Reject this request with an optional message."}
             </DialogDescription>
           </DialogHeader>
 
           {selectedApproval && (
             <div className="space-y-4">
+              {action === "approve" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    New Deadline <span className="text-destructive">*</span>
+                  </label>
+
+                  <input
+                    type="datetime-local"
+                    value={newDeadline}
+                    onChange={(e) => setNewDeadline(e.target.value)}
+                    className="w-full p-3 border rounded-md bg-background"
+                  />
+
+                  <p className="text-xs text-muted-foreground">
+                    Set the new deadline for this task.
+                  </p>
+                </div>
+              )}
+
               <div className="p-3 bg-muted rounded-md">
                 <p className="text-sm font-medium">
                   {selectedApproval.card.title}
@@ -278,8 +311,8 @@ export default function OvertimeApprovalsPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder={
                     action === "approve"
-                      ? "Add any guidelines or notes for the team member..."
-                      : "Explain why this request is being rejected..."
+                      ? "Add guideline or reminder..."
+                      : "Add reason for rejection..."
                   }
                   rows={3}
                 />
@@ -295,6 +328,7 @@ export default function OvertimeApprovalsPage() {
             >
               Cancel
             </Button>
+
             <Button
               onClick={handleProcess}
               disabled={processingId !== null}

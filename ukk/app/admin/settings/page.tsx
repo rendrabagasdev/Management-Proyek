@@ -375,7 +375,7 @@ export default function AdminSettingsPage() {
                       className={`p-3 sm:p-4 border-2 rounded-lg text-left transition-all hover:shadow-lg hover:scale-105 ${
                         selectedPack === pack.id
                           ? "border-blue-500 bg-blue-50 dark:bg-blue-950"
-                          : "border-gray-200 hover:border-gray-300"
+                          : "border-gray-400 hover:border-gray-400"
                       }`}
                     >
                       <div

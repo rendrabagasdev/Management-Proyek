@@ -177,9 +177,16 @@ export default function CardDetail({
   } | null>(null);
 
   // Sync state when initialCard changes (e.g., after refresh)
+
   useEffect(() => {
     setCard(initialCard);
   }, [initialCard]);
+  useEffect(() => {
+    const now = new Date();
+    const deadline = new Date(initialCard.deadline || "");
+
+    setOverdue(deadline < now);
+  });
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -198,6 +205,7 @@ export default function CardDetail({
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [overdue, setOverdue] = useState(false);
 
   // Modal state for feedback
   const [modalState, setModalState] = useState<{
@@ -1010,7 +1018,7 @@ export default function CardDetail({
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
                         subtask.status === "DONE"
                           ? "bg-(--theme-success) border-(--theme-success)"
-                          : "border-gray-300"
+                          : "border-gray-400"
                       }`}
                     >
                       {subtask.status === "DONE" && (
@@ -1232,14 +1240,23 @@ export default function CardDetail({
 
                 <Button
                   onClick={handleToggleTimer}
-                  disabled={loading}
+                  disabled={loading || overdue}
                   className={`w-full ${
-                    activeTimer
+                    overdue
+                      ? "bg-gray-600 cursor-not-allowed"
+                      : activeTimer
                       ? "bg-(--theme-danger) hover:bg-(--theme-danger-dark)"
                       : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
                   }`}
                 >
-                  {activeTimer ? (
+                  {loading ? (
+                    "Loading..."
+                  ) : overdue ? (
+                    <>
+                      <FaStop className="mr-2" />
+                      Overdue
+                    </>
+                  ) : activeTimer ? (
                     <>
                       <FaStop className="mr-2" />
                       Stop Timer

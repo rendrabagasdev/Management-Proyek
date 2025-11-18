@@ -54,7 +54,6 @@ export async function createNotification({
       notification: {
         ...notification,
         createdAt: notification.createdAt.toISOString(),
-        updatedAt: notification.updatedAt.toISOString(),
       },
       timestamp: new Date().toISOString(),
     });

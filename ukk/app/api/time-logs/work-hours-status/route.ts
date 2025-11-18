@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         hasActiveTimer = true;
         activeTimerStartTime = log.startTime;
         const currentMinutes =
-          (new Date().getTime() - log.startTime.getTime()) / 60000;
+          (new Date().getTime() - log.startTime.getTime()) / 1000;
         totalMinutesWorked += currentMinutes;
       } else {
         // Completed time log
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const hoursWorked = totalMinutesWorked / 60;
+    const hoursWorked = totalMinutesWorked / 3600;
 
     // Determine status
     let status: "ok" | "warning" | "error" | "exceeded";

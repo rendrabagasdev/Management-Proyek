@@ -104,9 +104,10 @@ export function NotificationBell() {
 
       if (response.ok) {
         setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          )
+          prev.map((n) => {
+            if (!n || typeof n.id === "undefined") return n;
+            return n.id === notificationId ? { ...n, isRead: true } : n;
+          })
         );
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }

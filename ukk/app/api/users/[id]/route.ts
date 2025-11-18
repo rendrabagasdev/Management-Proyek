@@ -7,9 +7,10 @@ import bcrypt from "bcryptjs";
 // PATCH /api/users/[id] - Update user info (name, email)
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: paramId } = await context.params;
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,7 +26,7 @@ export async function PATCH(
       );
     }
 
-    const userId = parseInt(params.id);
+    const userId = await parseInt(paramId);
     const body = await req.json();
     const { name, email, password } = body;
 
@@ -36,7 +37,7 @@ export async function PATCH(
         { status: 400 }
       );
     }
-
+    console.log("Updating user:", { userId, name, email });
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { id: userId },

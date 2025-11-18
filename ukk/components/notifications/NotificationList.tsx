@@ -50,9 +50,10 @@ export function NotificationList({
 
       if (response.ok) {
         setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, isRead: true } : n
-          )
+          prev.map((n) => {
+            if (n.id === notificationId) return n;
+            return n.id === notificationId ? { ...n, isRead: true } : n;
+          })
         );
       }
     } catch (error) {

@@ -168,7 +168,7 @@ export default function NewCardPage({ params }: NewCardPageProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, boardId: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                   disabled={loading || boards.length === 0}
                 >
@@ -191,7 +191,7 @@ export default function NewCardPage({ params }: NewCardPageProps) {
                   onChange={(e) =>
                     setFormData({ ...formData, priority: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loading}
                 >
                   <option value="LOW">Low</option>

@@ -287,7 +287,7 @@ export default function TopPerformers({ projectId }: TopPerformersProps) {
                     index === 0
                       ? "border-(--theme-accent) bg-(--theme-accent-light)/10"
                       : index === 1
-                      ? "border-gray-300 dark:border-gray-600 bg-muted/50"
+                      ? "border-gray-400 dark:border-gray-600 bg-muted/50"
                       : index === 2
                       ? "border-(--theme-warning) bg-(--theme-warning-light)/10"
                       : "border-border bg-card"
