@@ -7,9 +7,7 @@ import KanbanBoard from "@/components/projects/KanbanBoard";
 import ProjectHeader from "@/components/projects/ProjectHeader";
 
 interface ProjectPageProps {
-  params: Promise<{
-    id: string;
-  }>;
+  params: { id: string };
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {

@@ -15,7 +15,7 @@ import Link from "next/link";
 import { Priority, Status, ProjectRole } from "@prisma/client";
 import { formatDuration } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AssignmentModal from "@/components/projects/AssignmentModal";
 import { useToast } from "@/hooks/use-toast";
 import { useFirebaseEvent } from "@/lib/firebase-hooks";
@@ -74,9 +74,9 @@ const priorityColors: Record<Priority, string> = {
 };
 
 const priorityBadgeColors: Record<Priority, string> = {
-  LOW: "bg-(--theme-primary-light) text-(--theme-primary-dark)",
-  MEDIUM: "bg-(--theme-accent-light) text-(--theme-accent-dark)",
-  HIGH: "bg-(--theme-danger-light) text-(--theme-danger-dark)",
+  LOW: "bg-(--theme-primary-light)/80 text-(--theme-primary-dark)/80",
+  MEDIUM: "bg-(--theme-accent-light)/80 text-(--theme-accent-dark)/80",
+  HIGH: "bg-(--theme-danger-light)/80 text-(--theme-danger-dark)/80",
 };
 
 export default function KanbanBoard({
@@ -90,6 +90,8 @@ export default function KanbanBoard({
   const [boards, setBoards] = useState(project.boards);
   const [movingCardId, setMovingCardId] = useState<number | null>(null);
   const [assigningCardId, setAssigningCardId] = useState<number | null>(null);
+  const hasInitialized = useRef(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -113,6 +115,15 @@ export default function KanbanBoard({
 
   // Sync state when project.boards changes (e.g., after router.refresh())
   useEffect(() => {
+    // Skip realtime events untuk initial load
+    const timer = setTimeout(() => {
+      hasInitialized.current = true;
+      setIsFirstLoad(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+  useEffect(() => {
     setBoards(project.boards);
   }, [project.boards]);
 
@@ -121,6 +132,8 @@ export default function KanbanBoard({
 
   // Realtime: Listen to card created
   useFirebaseEvent(`projects/${project.id}/events`, "card:created", (data) => {
+    if (isFirstLoad) return;
+
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -134,6 +147,8 @@ export default function KanbanBoard({
 
   // Realtime: Listen to card updated
   useFirebaseEvent(`projects/${project.id}/events`, "card:updated", (data) => {
+    if (isFirstLoad) return;
+
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -147,6 +162,7 @@ export default function KanbanBoard({
 
   // Realtime: Listen to card deleted
   useFirebaseEvent(`projects/${project.id}/events`, "card:deleted", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -161,6 +177,7 @@ export default function KanbanBoard({
 
   // Realtime: Listen to card assigned
   useFirebaseEvent(`projects/${project.id}/events`, "card:assigned", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {

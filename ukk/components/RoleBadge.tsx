@@ -24,25 +24,25 @@ export function RoleBadge({
       label: "Admin",
       icon: FaUserShield,
       className:
-        "bg-(--theme-danger)/10 text-(--theme-danger) border-(--theme-danger) border-opacity-30 hover:bg-(--theme-danger) hover:bg-opacity-20",
+        "bg-(--theme-danger)/10 text-(--theme-danger) border-(--theme-danger) border-opacity-30 hover:bg-(--theme-danger)/20",
     },
     LEADER: {
       label: "Leader",
       icon: FaUserTie,
       className:
-        "bg-(--theme-primary)/10 text-(--theme-primary) border-(--theme-primary) border-opacity-30 hover:bg-(--theme-primary) hover:bg-opacity-20",
+        "bg-(--theme-primary)/10 text-(--theme-primary) border-(--theme-primary) border-opacity-30 hover:bg-(--theme-primary)/20",
     },
     DEVELOPER: {
       label: "Developer",
       icon: FaCode,
       className:
-        "bg-(--theme-success)/10 text-(--theme-success) border-(--theme-success) border-opacity-30 hover:bg-(--theme-success) hover:bg-opacity-20",
+        "bg-(--theme-success)/10 text-(--theme-success) border-(--theme-success) border-opacity-30 hover:bg-(--theme-success)/20",
     },
     DESIGNER: {
       label: "Designer",
       icon: FaPalette,
       className:
-        "bg-(--theme-accent)/10 text-(--theme-accent) border-(--theme-accent) border-opacity-30 hover:bg-(--theme-accent) hover:bg-opacity-20",
+        "bg-(--theme-accent)/10 text-(--theme-accent) border-(--theme-accent) border-opacity-30 hover:bg-(--theme-accent)/20",
     },
     OBSERVER: {
       label: "Observer",
@@ -54,7 +54,7 @@ export function RoleBadge({
       label: "Member",
       icon: FaUserTie,
       className:
-        "bg-(--theme-secondary)/10 text-(--theme-secondary) border-(--theme-secondary) border-opacity-30 hover:bg-(--theme-secondary) hover:bg-opacity-20",
+        "bg-(--theme-secondary)/10 text-(--theme-secondary) border-(--theme-secondary) border-opacity-30 hover:bg-(--theme-secondary)/20",
     },
   };
 

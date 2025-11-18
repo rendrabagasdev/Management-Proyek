@@ -242,7 +242,7 @@ export default function ProjectAnalytics({ project }: ProjectAnalyticsProps) {
           </div>
 
           {overdueTasks.length > 0 && (
-            <div className="flex items-center gap-2 p-3 bg-(--theme-danger-light) border border-(--theme-danger-light) rounded-lg">
+            <div className="flex items-center gap-2 p-3 bg-(--theme-danger-light)/20 border border-(--theme-danger-light) rounded-lg">
               <FaExclamationTriangle className="text-(--theme-danger)" />
               <span className="text-sm text-(--theme-danger-dark)">
                 {overdueTasks.length} overdue task

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useFirebaseEvent } from "@/lib/firebase-hooks";
@@ -164,6 +164,8 @@ export default function CardDetail({
   const [loading, setLoading] = useState(false);
   const [subtaskTitle, setSubtaskTitle] = useState("");
   const [currentTime, setCurrentTime] = useState(0);
+  const hasInitialized = useRef(false);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [workHoursStatus, setWorkHoursStatus] = useState<{
     hoursWorked: number;
     minHours: number;
@@ -177,7 +179,15 @@ export default function CardDetail({
   } | null>(null);
 
   // Sync state when initialCard changes (e.g., after refresh)
+  useEffect(() => {
+    // Skip realtime events untuk initial load
+    const timer = setTimeout(() => {
+      hasInitialized.current = true;
+      setIsFirstLoad(false);
+    }, 1000);
 
+    return () => clearTimeout(timer);
+  }, []);
   useEffect(() => {
     setCard(initialCard);
   }, [initialCard]);
@@ -299,6 +309,7 @@ export default function CardDetail({
 
   // Realtime: Listen to card updated
   useFirebaseEvent(`cards/${card.id}/events`, "card:updated", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -312,6 +323,7 @@ export default function CardDetail({
 
   // Realtime: Listen to card assigned
   useFirebaseEvent(`cards/${card.id}/events`, "card:assigned", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -325,6 +337,7 @@ export default function CardDetail({
 
   // Realtime: Listen to comment created
   useFirebaseEvent(`cards/${card.id}/events`, "comment:created", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -338,6 +351,7 @@ export default function CardDetail({
 
   // Realtime: Listen to subtask created
   useFirebaseEvent(`cards/${card.id}/events`, "subtask:created", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -351,6 +365,7 @@ export default function CardDetail({
 
   // Realtime: Listen to subtask updated
   useFirebaseEvent(`cards/${card.id}/events`, "subtask:updated", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -364,6 +379,7 @@ export default function CardDetail({
 
   // Realtime: Listen to subtask deleted
   useFirebaseEvent(`cards/${card.id}/events`, "subtask:deleted", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId } = eventData;
     if (eventUserId !== userId) {
@@ -378,6 +394,7 @@ export default function CardDetail({
 
   // Realtime: Listen to time log started (trigger to refresh data)
   useFirebaseEvent(`cards/${card.id}/events`, "timelog:started", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId, timestamp } = eventData;
 
@@ -403,6 +420,7 @@ export default function CardDetail({
 
   // Realtime: Listen to time log stopped (trigger to refresh data)
   useFirebaseEvent(`cards/${card.id}/events`, "timelog:stopped", (data) => {
+    if (isFirstLoad) return;
     const eventData = data as Record<string, unknown>;
     const { userId: eventUserId, timestamp } = eventData;
 

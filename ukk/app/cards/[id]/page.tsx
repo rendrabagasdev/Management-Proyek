@@ -6,9 +6,9 @@ import { notFound } from "next/navigation";
 import CardDetail from "@/components/cards/CardDetail";
 
 interface CardPageProps {
-  params: Promise<{
+  params: {
     id: string;
-  }>;
+  };
 }
 
 export default async function CardPage({ params }: CardPageProps) {
