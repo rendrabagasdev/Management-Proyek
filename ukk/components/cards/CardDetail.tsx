@@ -767,7 +767,7 @@ export default function CardDetail({
                             ? " You need leader approval to continue working on this task."
                             : " Please contact project leader."}
                         </p>
-                        <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+                        <div className="flex items-center gap-2 text-xs text-red-600 dark:bg-background/10 dark:text-red-400">
                           <FaClock />
                           <span>
                             Deadline was:{" "}
@@ -849,7 +849,7 @@ export default function CardDetail({
                   <div className="flex items-start gap-3">
                     <span className="text-xl">⚠️</span>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-1">
+                      <h3 className="font-semibold text-yellow-800 dark:text-yellow-200 dark:bg-yellow-950 border-yellow-400 border  mb-1">
                         Deadline Approaching - {daysUntilDeadline} Days
                         Remaining
                       </h3>

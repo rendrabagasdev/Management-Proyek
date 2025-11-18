@@ -8,6 +8,7 @@ interface DeadlineBadgeProps {
   showMessage?: boolean;
   size?: "sm" | "md" | "lg";
   className?: string;
+  mode?: "gelp" | "default";
 }
 
 export function DeadlineBadge({
@@ -16,11 +17,33 @@ export function DeadlineBadge({
   showMessage = true,
   size = "md",
   className = "",
+  mode = "default",
 }: DeadlineBadgeProps) {
   const info = getDeadlineStatus(deadline);
 
   if (info.status === "none") {
     return null;
+  }
+
+  // Mode gelp: tampilkan badge khusus
+  if (mode === "gelp") {
+    return (
+      <div
+        className={`inline-flex items-center gap-1.5 rounded-full font-bold bg-pink-600 text-white border border-pink-700 ${
+          size === "sm"
+            ? "text-xs px-2 py-0.5"
+            : size === "lg"
+            ? "text-base px-3 py-1.5"
+            : "text-sm px-2.5 py-1"
+        } ${className}`}
+        title={formatDeadline(deadline)}
+      >
+        {showIcon && (
+          <FaExclamationTriangle className="shrink-0 animate-bounce" />
+        )}
+        {showMessage && <span>GELP MODE: {info.message}</span>}
+      </div>
+    );
   }
 
   const sizeClasses = {
@@ -81,7 +104,7 @@ export function DeadlineProgress({
 
   const progressColor =
     info.status === "overdue"
-      ? "bg-(--theme-danger)"
+      ? "bg-(--theme-danger) dark:bg-(--theme-danger)/20"
       : info.status === "critical"
       ? "bg-(--theme-danger) opacity-90"
       : info.status === "approaching"
@@ -132,9 +155,9 @@ export function DeadlineAlert({
 
   const borderColor =
     info.status === "overdue"
-      ? "border-(--theme-danger)"
+      ? "border-(--theme-danger)/80"
       : info.status === "critical"
-      ? "border-(--theme-danger) border-opacity-90"
+      ? "border-(--theme-danger)/80"
       : "border-(--theme-warning)";
 
   return (
