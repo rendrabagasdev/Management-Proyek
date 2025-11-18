@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'dart:developer';
 
 class NotificationModel {
   final int id;
@@ -76,7 +77,7 @@ class NotificationService {
       }
       return [];
     } catch (e) {
-      print('Error getting notifications: $e');
+      log('Error getting notifications: $e');
       return [];
     }
   }
@@ -89,7 +90,7 @@ class NotificationService {
       );
       return response.data['count'] ?? 0;
     } catch (e) {
-      print('Error getting unread count: $e');
+      log('Error getting unread count: $e');
       return 0;
     }
   }
@@ -105,7 +106,7 @@ class NotificationService {
       );
       return true;
     } catch (e) {
-      print('Error marking notification as read: $e');
+      log('Error marking notification as read: $e');
       return false;
     }
   }
@@ -119,7 +120,7 @@ class NotificationService {
       );
       return true;
     } catch (e) {
-      print('Error marking all as read: $e');
+      log('Error marking all as read: $e');
       return false;
     }
   }
@@ -130,7 +131,7 @@ class NotificationService {
       await _dio.delete('$_baseUrl/mobile/notifications?id=$notificationId');
       return true;
     } catch (e) {
-      print('Error deleting notification: $e');
+      log('Error deleting notification: $e');
       return false;
     }
   }

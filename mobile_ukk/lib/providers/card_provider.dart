@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../models/card_detail_model.dart';
+import 'dart:developer';
 
 // Card detail provider
 final cardDetailProvider = FutureProvider.autoDispose.family<CardDetail, int>((
@@ -13,7 +14,7 @@ final cardDetailProvider = FutureProvider.autoDispose.family<CardDetail, int>((
 
     return CardDetail.fromJson(response);
   } catch (e) {
-    print('❌ Failed to load card detail: $e');
+    log('❌ Failed to load card detail: $e');
     throw Exception('Failed to load card detail: $e');
   }
 });

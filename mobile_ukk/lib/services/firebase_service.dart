@@ -1,5 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:developer';
 
 /// Firebase Service untuk Real-time Updates dan Push Notifications
 /// Menggantikan Pusher Service
@@ -38,9 +39,9 @@ class FirebaseService {
       _setupFCMListeners();
 
       _initialized = true;
-      print('✅ Firebase initialized successfully');
+      log('✅ Firebase initialized successfully');
     } catch (e) {
-      print('❌ Error initializing Firebase: $e');
+      log('❌ Error initializing Firebase: $e');
     }
   }
 
@@ -58,19 +59,19 @@ class FirebaseService {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        print('✅ Notification permission granted');
+        log('✅ Notification permission granted');
 
         // Get FCM token
         String? token = await _messaging.getToken();
         if (token != null) {
-          print('📱 FCM Token: $token');
+          log('📱 FCM Token: $token');
           // TODO: Save token to backend/database
         }
       } else {
-        print('⚠️ Notification permission denied');
+        log('⚠️ Notification permission denied');
       }
     } catch (e) {
-      print('❌ Error requesting notification permission: $e');
+      log('❌ Error requesting notification permission: $e');
     }
   }
 
@@ -78,18 +79,18 @@ class FirebaseService {
   void _setupFCMListeners() {
     // Foreground messages
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('📬 Foreground message received');
-      print('Title: ${message.notification?.title}');
-      print('Body: ${message.notification?.body}');
-      print('Data: ${message.data}');
+      log('📬 Foreground message received');
+      log('Title: ${message.notification?.title}');
+      log('Body: ${message.notification?.body}');
+      log('Data: ${message.data}');
 
       // TODO: Show local notification
     });
 
     // Background/terminated messages
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('📬 Message opened from background');
-      print('Data: ${message.data}');
+      log('📬 Message opened from background');
+      log('Data: ${message.data}');
 
       // TODO: Navigate to specific page based on data
     });
@@ -106,7 +107,7 @@ class FirebaseService {
 
     try {
       if (_subscriptions.containsKey(path)) {
-        print('⚠️ Already subscribed to: $path');
+        log('⚠️ Already subscribed to: $path');
         return;
       }
 
@@ -118,9 +119,9 @@ class FirebaseService {
         _handleDatabaseEvent(path, event);
       });
 
-      print('✅ Subscribed to Firebase path: $path');
+      log('✅ Subscribed to Firebase path: $path');
     } catch (e) {
-      print('❌ Error subscribing to path $path: $e');
+      log('❌ Error subscribing to path $path: $e');
     }
   }
 
@@ -131,10 +132,10 @@ class FirebaseService {
         // Firebase will automatically clean up listeners when reference is removed
         _subscriptions.remove(path);
         _eventHandlers.remove(path);
-        print('✅ Unsubscribed from path: $path');
+        log('✅ Unsubscribed from path: $path');
       }
     } catch (e) {
-      print('❌ Error unsubscribing from path $path: $e');
+      log('❌ Error unsubscribing from path $path: $e');
     }
   }
 
@@ -158,10 +159,10 @@ class FirebaseService {
     if (_eventHandlers.containsKey(path) &&
         _eventHandlers[path]!.containsKey(eventType)) {
       try {
-        print('🔔 Triggering handler: $eventType on $path');
+        log('🔔 Triggering handler: $eventType on $path');
         _eventHandlers[path]![eventType]!(data);
       } catch (e) {
-        print('❌ Error executing handler for $eventType on $path: $e');
+        log('❌ Error executing handler for $eventType on $path: $e');
       }
     }
   }
@@ -173,7 +174,7 @@ class FirebaseService {
   /// firebaseService.bindEvent(
   ///   'cards/123/events',
   ///   'card:updated',
-  ///   (data) => print('Card updated: $data')
+  ///   (data) => log('Card updated: $data')
   /// );
   /// ```
   void bindEvent(String path, String eventType, Function(dynamic) handler) {
@@ -181,14 +182,14 @@ class FirebaseService {
       _eventHandlers[path] = {};
     }
     _eventHandlers[path]![eventType] = handler;
-    print('✅ Event handler bound: $eventType on $path');
+    log('✅ Event handler bound: $eventType on $path');
   }
 
   /// Unbind event handler
   void unbindEvent(String path, String eventType) {
     if (_eventHandlers.containsKey(path)) {
       _eventHandlers[path]!.remove(eventType);
-      print('✅ Event handler unbound: $eventType on $path');
+      log('✅ Event handler unbound: $eventType on $path');
     }
   }
 
@@ -197,7 +198,7 @@ class FirebaseService {
     try {
       return await _messaging.getToken();
     } catch (e) {
-      print('❌ Error getting FCM token: $e');
+      log('❌ Error getting FCM token: $e');
       return null;
     }
   }
@@ -209,9 +210,9 @@ class FirebaseService {
       for (var path in paths) {
         await unsubscribeFromPath(path);
       }
-      print('✅ Firebase service disposed');
+      log('✅ Firebase service disposed');
     } catch (e) {
-      print('❌ Error disposing Firebase service: $e');
+      log('❌ Error disposing Firebase service: $e');
     }
   }
 }

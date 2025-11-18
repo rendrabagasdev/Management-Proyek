@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../models/card_model.dart';
+import 'dart:developer';
 
 // Dashboard stats model
 class DashboardStats {
@@ -65,7 +66,7 @@ final dashboardStatsProvider = FutureProvider.autoDispose<DashboardStats>((
       myCards: cards,
     );
   } catch (e) {
-    print('❌ Failed to load dashboard stats: $e');
+    log('❌ Failed to load dashboard stats: $e');
     throw Exception('Failed to load dashboard stats: $e');
   }
 });

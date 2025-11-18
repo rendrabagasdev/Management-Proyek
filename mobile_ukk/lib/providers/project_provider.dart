@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/api_service.dart';
 import '../models/project_model.dart';
+import 'dart:developer';
 
 // Projects list provider
 final projectsProvider = FutureProvider.autoDispose<List<Project>>((ref) async {
@@ -12,7 +13,7 @@ final projectsProvider = FutureProvider.autoDispose<List<Project>>((ref) async {
         .map((json) => Project.fromJson(json as Map<String, dynamic>))
         .toList();
   } catch (e) {
-    print('❌ Failed to load projects: $e');
+    log('❌ Failed to load projects: $e');
     throw Exception('Failed to load projects: $e');
   }
 });
@@ -28,7 +29,7 @@ final projectDetailProvider = FutureProvider.autoDispose.family<Project, int>((
 
     return Project.fromJson(response);
   } catch (e) {
-    print('❌ Failed to load project detail: $e');
+    log('❌ Failed to load project detail: $e');
     throw Exception('Failed to load project detail: $e');
   }
 });
