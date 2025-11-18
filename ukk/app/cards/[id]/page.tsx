@@ -111,6 +111,12 @@ export default async function CardPage({ params }: CardPageProps) {
         },
       },
       timeLogs: {
+        where: {
+          startTime: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setHours(23, 59, 59, 999)),
+          },
+        },
         include: {
           user: {
             select: {
