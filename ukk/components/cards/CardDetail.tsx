@@ -166,6 +166,7 @@ export default function CardDetail({
   const [currentTime, setCurrentTime] = useState(0);
   const hasInitialized = useRef(false);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [isDone, setIsDone] = useState(false);
   const [workHoursStatus, setWorkHoursStatus] = useState<{
     hoursWorked: number;
     minHours: number;
@@ -196,6 +197,7 @@ export default function CardDetail({
     const deadline = new Date(initialCard.deadline || "");
 
     setOverdue(deadline < now);
+    setIsDone(initialCard.status === "DONE");
   });
 
   // Edit dialog state
@@ -759,6 +761,7 @@ export default function CardDetail({
 
         {/* Deadline Warning Alerts */}
         {card.deadline &&
+          !isDone &&
           (() => {
             const now = new Date();
             const deadline = new Date(card.deadline);
@@ -773,7 +776,7 @@ export default function CardDetail({
             const isApproaching =
               daysUntilDeadline <= 3 && daysUntilDeadline > 1;
 
-            if (isOverdue) {
+            if (isOverdue && isDone) {
               const daysOverdue = Math.abs(daysUntilDeadline);
               const isAssignee = card.assigneeId === userId;
 
@@ -817,7 +820,7 @@ export default function CardDetail({
                     isAssignee={isAssignee}
                   />
 
-                  {isAssignee && (
+                  {isAssignee && !isDone && (
                     <OvertimeRequestDialog
                       cardId={card.id}
                       cardTitle={card.title}
@@ -834,7 +837,7 @@ export default function CardDetail({
                   )}
                 </div>
               );
-            } else if (isUrgent) {
+            } else if (isUrgent && !isDone) {
               return (
                 <div className="mb-4 p-4 bg-amber-50 dark:bg-amber-950 border-2 border-amber-500 rounded-lg">
                   <div className="flex items-start gap-3">
@@ -869,7 +872,7 @@ export default function CardDetail({
                   </div>
                 </div>
               );
-            } else if (isApproaching) {
+            } else if (isApproaching && !isDone) {
               return (
                 <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-950 border border-yellow-400 rounded-lg">
                   <div className="flex items-start gap-3">
@@ -953,7 +956,7 @@ export default function CardDetail({
                 </div>
 
                 {/* Deadline Alert */}
-                {card.deadline && (
+                {card.deadline && !isDone && (
                   <DeadlineAlert
                     deadline={card.deadline}
                     title="Card Deadline"
@@ -962,7 +965,7 @@ export default function CardDetail({
                 )}
 
                 {/* Deadline Progress */}
-                {card.deadline && (
+                {card.deadline && !isDone && (
                   <DeadlineProgress
                     deadline={card.deadline}
                     createdAt={card.createdAt}
