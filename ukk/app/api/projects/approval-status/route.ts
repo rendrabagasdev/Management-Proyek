@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
     // Fetch pending projects (completed but not approved)
     const pendingProjects = await prisma.project.findMany({
       where: {
-        status: {
-          not: "COMPLETED",
-        },
+        status: "ON_HOLD",
       },
       include: {
         creator: {
