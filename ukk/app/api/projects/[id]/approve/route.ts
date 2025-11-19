@@ -30,12 +30,31 @@ export async function PATCH(
 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
+      include: {
+        boards: {
+          include: {
+            cards: {
+              select: { id: true, status: true },
+            },
+          },
+        },
+      },
     });
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
-
+    if (
+      project.boards
+        .map((board) => board.cards)
+        .flat()
+        .some((card) => card.status !== "DONE")
+    ) {
+      return NextResponse.json(
+        { error: "Project have card active" },
+        { status: 404 }
+      );
+    }
     // Update project to mark as approved
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
