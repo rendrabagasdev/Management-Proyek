@@ -50,14 +50,17 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { isCompleted } = body;
+    const { isCompleted, status } = body;
 
     // Toggle completion status
     const updatedProject = await prisma.project.update({
       where: { id: projectId },
       data: {
-        isCompleted: isCompleted,
-        completedAt: isCompleted ? new Date() : null,
+        status: status,
+        ...(typeof isCompleted !== "undefined" && {
+          isCompleted: isCompleted,
+          completedAt: isCompleted ? new Date() : null,
+        }),
       },
       include: {
         creator: {

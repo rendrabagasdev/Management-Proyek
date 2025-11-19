@@ -278,7 +278,7 @@ export default function ProjectSettings({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          isCompleted: !project.isCompleted,
+          status: "ON_HOLD",
         }),
       });
 

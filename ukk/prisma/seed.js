@@ -7,6 +7,18 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
+  async function safeDelete(model, name) {
+    try {
+      await model.deleteMany();
+      console.log(`   - Cleared ${name}`);
+    } catch (err) {
+      if (err.code === "P2021") {
+        console.log(`   - Skipped ${name} (table not found)`);
+      } else {
+        throw err;
+      }
+    }
+  }
   console.log("🌱 Prisma seed: starting...");
 
   // Hash password untuk semua user
@@ -14,19 +26,19 @@ async function main() {
 
   // Clear existing data (optional - comment out if you want to keep existing data)
   console.log("🗑️  Cleaning existing data...");
-  await prisma.notification.deleteMany();
-  await prisma.timeLog.deleteMany();
-  await prisma.comment.deleteMany();
-  await prisma.subtask.deleteMany();
-  await prisma.cardAssignment.deleteMany();
-  await prisma.card.deleteMany();
-  await prisma.board.deleteMany();
-  await prisma.projectMember.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.session.deleteMany();
-  await prisma.account.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.appSettings.deleteMany();
+  await safeDelete(prisma.notification, "notifications");
+  await safeDelete(prisma.timeLog, "time logs");
+  await safeDelete(prisma.comment, "comments");
+  await safeDelete(prisma.subtask, "subtasks");
+  await safeDelete(prisma.cardAssignment, "card assignments");
+  await safeDelete(prisma.card, "cards");
+  await safeDelete(prisma.board, "boards");
+  await safeDelete(prisma.projectMember, "project members");
+  await safeDelete(prisma.project, "projects");
+  await safeDelete(prisma.session, "sessions");
+  await safeDelete(prisma.account, "accounts");
+  await safeDelete(prisma.user, "users");
+  await safeDelete(prisma.appSettings, "app settings");
 
   // ===========================
   // CREATE USERS

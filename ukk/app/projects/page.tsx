@@ -116,12 +116,20 @@ export default async function ProjectsPage() {
           </p>
         </div>
         {canCreateProject && (
-          <Button asChild>
-            <Link href="/projects/new">
-              <FaPlus className="mr-2" />
-              New Project
-            </Link>
-          </Button>
+          <div>
+            <Button asChild>
+              <Link href="/projects/new">
+                <FaPlus className="mr-2" />
+                New Project
+              </Link>
+            </Button>
+            <Button asChild className="ml-2">
+              <Link href="/projects/completed">
+                <FaTasks className="mr-2" />
+                Completed Projects
+              </Link>
+            </Button>
+          </div>
         )}
       </div>
 

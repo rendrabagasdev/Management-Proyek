@@ -20,7 +20,7 @@ export async function GET(
     const userId = parseInt(session.user.id);
 
     const project = await prisma.project.findUnique({
-      where: { id: projectId },
+      where: { id: projectId, isCompleted: false },
       include: {
         creator: {
           select: { id: true, name: true, email: true },

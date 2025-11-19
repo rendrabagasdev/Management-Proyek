@@ -13,7 +13,7 @@ datasource db {
 }
 
 // ===========================
-// USER & AUTHENTICATION
+// USER & AUTHENTICATIONz
 // ===========================
 
 model User {
@@ -93,6 +93,7 @@ model Project {
   id          Int       @id @default(autoincrement())
   name        String
   description String?   @db.Text
+  status      ProjectStatus @default(ACTIVE)
   deadline    DateTime?
   createdBy   Int
   isCompleted Boolean   @default(false)
@@ -352,4 +353,10 @@ enum ApprovalStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ON_HOLD
+  COMPLETED
 }
