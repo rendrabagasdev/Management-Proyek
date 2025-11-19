@@ -29,6 +29,7 @@ export default async function ProjectsPage() {
   const projects =
     userRole === "ADMIN"
       ? await prisma.project.findMany({
+          where: { isCompleted: false },
           include: {
             creator: {
               select: {

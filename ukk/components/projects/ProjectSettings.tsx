@@ -539,80 +539,79 @@ export default function ProjectSettings({
         </Card>
 
         {/* Project Status */}
-        {(isCreator || isAdmin) && (
-          <Card
-            className={
-              project.isCompleted
-                ? "border-(--theme-primary-light)"
-                : "border-(--theme-success-light)"
-            }
-          >
-            <CardHeader>
-              <CardTitle
+
+        <Card
+          className={
+            project.isCompleted
+              ? "border-(--theme-primary-light)"
+              : "border-(--theme-success-light)"
+          }
+        >
+          <CardHeader>
+            <CardTitle
+              className={
+                project.isCompleted
+                  ? "text-(--theme-primary)"
+                  : "text-(--theme-success)"
+              }
+            >
+              Project Status
+            </CardTitle>
+            <CardDescription>
+              Mark this project as completed or reopen it
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`flex items-center justify-between p-4 border rounded-lg ${
+                project.isCompleted
+                  ? "border-(--theme-primary-light) bg-(--theme-primary-light)"
+                  : "border-(--theme-success-light) bg-(--theme-success-light)"
+              }`}
+            >
+              <div>
+                <h4
+                  className={`font-semibold ${
+                    project.isCompleted
+                      ? "text-(--theme-primary-dark)"
+                      : "text-(--theme-success-dark)"
+                  }`}
+                >
+                  {project.isCompleted
+                    ? "Project Completed"
+                    : "Mark Project as Completed"}
+                </h4>
+                <p
+                  className={`text-sm ${
+                    project.isCompleted
+                      ? "text-(--theme-primary-dark)"
+                      : "text-(--theme-success-dark)"
+                  }`}
+                >
+                  {project.isCompleted
+                    ? `Completed on ${
+                        project.completedAt
+                          ? new Date(project.completedAt).toLocaleDateString()
+                          : "N/A"
+                      }`
+                    : "Mark this project as completed when all work is done"}
+                </p>
+              </div>
+              <Button
+                variant={project.isCompleted ? "outline" : "default"}
+                onClick={() => setShowCompleteDialog(true)}
+                disabled={loading}
                 className={
                   project.isCompleted
-                    ? "text-(--theme-primary)"
-                    : "text-(--theme-success)"
+                    ? "bg-(--theme-primary-light) hover:bg-(--theme-primary-light)"
+                    : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
                 }
               >
-                Project Status
-              </CardTitle>
-              <CardDescription>
-                Mark this project as completed or reopen it
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div
-                className={`flex items-center justify-between p-4 border rounded-lg ${
-                  project.isCompleted
-                    ? "border-(--theme-primary-light) bg-(--theme-primary-light)"
-                    : "border-(--theme-success-light) bg-(--theme-success-light)"
-                }`}
-              >
-                <div>
-                  <h4
-                    className={`font-semibold ${
-                      project.isCompleted
-                        ? "text-(--theme-primary-dark)"
-                        : "text-(--theme-success-dark)"
-                    }`}
-                  >
-                    {project.isCompleted
-                      ? "Project Completed"
-                      : "Mark Project as Completed"}
-                  </h4>
-                  <p
-                    className={`text-sm ${
-                      project.isCompleted
-                        ? "text-(--theme-primary-dark)"
-                        : "text-(--theme-success-dark)"
-                    }`}
-                  >
-                    {project.isCompleted
-                      ? `Completed on ${
-                          project.completedAt
-                            ? new Date(project.completedAt).toLocaleDateString()
-                            : "N/A"
-                        }`
-                      : "Mark this project as completed when all work is done"}
-                  </p>
-                </div>
-                <Button
-                  variant={project.isCompleted ? "outline" : "default"}
-                  onClick={() => setShowCompleteDialog(true)}
-                  disabled={loading}
-                  className={
-                    project.isCompleted
-                      ? "bg-(--theme-primary-light) hover:bg-(--theme-primary-light)"
-                      : "bg-(--theme-success) hover:bg-(--theme-success-dark)"
-                  }
-                >
-                  {project.isCompleted ? "Reopen Project" : "Mark as Completed"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                {project.isCompleted ? "Reopen Project" : "Mark as Completed"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Danger Zone */}
         {(isCreator || isAdmin) && (

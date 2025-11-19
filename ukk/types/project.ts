@@ -4,9 +4,15 @@ export interface Project {
   id: number;
   name: string;
   description: string | null;
+  status: "ACTIVE" | "ON_HOLD" | "COMPLETED";
+  isCompleted: boolean;
   createdBy: number;
   createdAt: Date;
   updatedAt: Date;
+  deadline?: Date;
+  completedAt?: Date;
+  approvedAt?: Date;
+  approvedBy?: string;
 }
 
 export interface ProjectWithMembers extends Project {
@@ -30,6 +36,11 @@ export interface ProjectWithMembers extends Project {
     name: string;
     position: number;
   }[];
+}
+
+export interface ProjectWithStats extends ProjectWithMembers {
+  totalTasks: number;
+  completedTasks: number;
 }
 
 export type CreateProjectInput = {

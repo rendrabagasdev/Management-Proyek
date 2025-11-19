@@ -38,9 +38,10 @@ export async function PATCH(
 
     // Only ADMIN or project creator can mark as completed
     const isAdmin = session.user.role === "ADMIN";
+    const isLeader = session.user.role === "LEADER";
     const isCreator = project.createdBy === parseInt(session.user.id);
 
-    if (!isAdmin && !isCreator) {
+    if (!isAdmin && !isCreator && !isLeader) {
       return NextResponse.json(
         {
           error: "Only admin or project creator can mark project as completed",

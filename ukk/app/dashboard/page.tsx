@@ -47,6 +47,9 @@ export default async function DashboardPage() {
   // Render different dashboard based on role
   if (userRole === "ADMIN") {
     const allProjects = await prisma.project.findMany({
+      where: {
+        isCompleted: false,
+      },
       include: {
         creator: {
           select: {
@@ -79,8 +82,9 @@ export default async function DashboardPage() {
   if (userRole === "LEADER") {
     const leaderProjects = await prisma.project.findMany({
       where: {
+        isCompleted: false,
         OR: [
-          { createdBy: userId },
+          { createdBy: userId, isCompleted: false },
           {
             members: {
               some: {
