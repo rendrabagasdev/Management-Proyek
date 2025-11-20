@@ -776,7 +776,7 @@ export default function CardDetail({
             const isApproaching =
               daysUntilDeadline <= 3 && daysUntilDeadline > 1;
 
-            if (isOverdue && isDone) {
+            if (isOverdue && !isDone) {
               const daysOverdue = Math.abs(daysUntilDeadline);
               const isAssignee = card.assigneeId === userId;
 
